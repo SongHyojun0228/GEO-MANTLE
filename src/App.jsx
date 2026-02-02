@@ -262,7 +262,7 @@ function App() {
 
       {/* Map Section */}
       <section className="w-full max-w-md mb-8">
-        <div className="bg-gray-800 p-2 rounded-lg shadow-lg">
+        <div className="bg-gray-800 p-2 rounded-lg shadow-lg relative z-0">
           <MapContainer
             center={[20, 0]} // Center of the world
             zoom={2}
@@ -350,7 +350,7 @@ function App() {
 
       {/* Success Modal (Placeholder) */}
       {isCorrect && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-700 p-8 rounded-lg shadow-xl text-center relative"> {/* Added relative for positioning */}
             <button
               onClick={handleCloseModal}
