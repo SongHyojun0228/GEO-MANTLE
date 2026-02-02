@@ -77,6 +77,14 @@ yarn build
 
 **배포된 사이트:** [https://geo-mantle.vercel.app/](https://geo-mantle.vercel.app/)
 
+## 🔍 SEO 및 수익 창출
+
+이 프로젝트는 Google 검색 결과에 잘 노출되고 광고 수익을 창출하기 위해 다음과 같이 설정되었습니다.
+
+*   **Google AdSense**: `index.html`에 애드센스 스크립트와 메타 태그가 추가되었으며, 루트 디렉토리에 `ads.txt` 파일이 포함되어 광고 게재를 위한 기본 설정이 완료되었습니다.
+*   **Google Search Console**: 사이트 소유권 확인을 위해 `index.html`에 `google-site-verification` 메타 태그가 추가되었습니다.
+*   **Sitemap**: 검색 엔진이 사이트 구조를 더 잘 이해하고 크롤링할 수 있도록 `public/sitemap.xml` 파일이 생성되었습니다.
+
 ## 라이선스
 
 MIT 라이선스에 따라 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하십시오.
