@@ -75,6 +75,8 @@ yarn build
 
 이 프로젝트는 프런트엔드 전용 애플리케이션이며 정적 호스팅 서비스에 쉽게 배포할 수 있습니다. [Vercel](https://vercel.com/)에 원활하게 배포되도록 구성되었습니다.
 
+**배포된 사이트:** [https://geo-mantle.vercel.app/](https://geo-mantle.vercel.app/)
+
 ## 라이선스
 
 MIT 라이선스에 따라 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하십시오.
