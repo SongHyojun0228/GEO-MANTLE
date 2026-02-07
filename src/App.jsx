@@ -4,7 +4,33 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css'; // Import Leaflet CSS
 import { countries, getDailyAnswerCountry } from './data/countries';
 import { getGeoDetails } from './utils/geo';
-import world_map_1 from './assets/world_map_1.png';            
+import {
+  getStats,
+  updateStatsOnGameComplete,
+  getAverageGuesses,
+  saveYesterdayAnswer,
+  getYesterdayAnswer,
+  addToArchive,
+  getArchive,
+  getAdsWatched,
+  incrementAdsWatched,
+  getUnlockedHints,
+  unlockHint,
+  checkAndResetForNewDay,
+} from './utils/storage';
+import {
+  generateContinentHint,
+  generateDistanceHint,
+  canUnlockHint,
+  adsNeededForNextHint,
+} from './utils/hints';
+import { showRewardedAd } from './utils/adinplay';
+import GameStats from './components/GameStats';
+import YesterdayAnswer from './components/YesterdayAnswer';
+import RecentArchive from './components/RecentArchive';
+import HintSystem from './components/HintSystem';
+import AdSenseAd from './components/AdSenseAd';
+import world_map_1 from './assets/world_map_1.png';
 import world_map_2 from './assets/world_map_2.png';   
 
 // Fix for default Leaflet icon paths
@@ -58,23 +84,33 @@ function App() {
     }
     return 0;
   });
-  const [showInstructionsModal, setShowInstructionsModal] = useState(false); // New state for instructions modal
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
+
+  // 새로운 State: 통계, 아카이브, 힌트
+  const [stats, setStats] = useState(() => getStats());
+  const [archive, setArchive] = useState(() => getArchive());
+  const [yesterdayAnswer, setYesterdayAnswer] = useState(() => getYesterdayAnswer());
+  const [adsWatchedCount, setAdsWatchedCount] = useState(() => getAdsWatched());
+  const [unlockedHints, setUnlockedHints] = useState(() => getUnlockedHints());
 
   // Store the current date in localStorage if it's a new day or not set
   // This useEffect also handles resetting game state for a new day
   useEffect(() => {
-    const savedDate = localStorage.getItem('geoMantle_date');
-    if (savedDate !== currentDateString) {
-      localStorage.setItem('geoMantle_date', currentDateString);
-      // Ensure all game state is reset for a new day
-      localStorage.removeItem('geoMantle_guesses');
-      localStorage.removeItem('geoMantle_isCorrect');
-      localStorage.removeItem('geoMantle_uniqueGuessesCount');
+    const isNewDay = checkAndResetForNewDay(currentDateString);
+
+    if (isNewDay) {
       // Update state directly if a reset occurs within this effect
       setGuesses([]);
       setIsCorrect(false);
       setUniqueGuessesCount(0);
+      setAdsWatchedCount(0);
+      setUnlockedHints({ continent: false, distance: false });
+
+      // 어제의 정답 업데이트
+      const newYesterdayAnswer = getYesterdayAnswer();
+      setYesterdayAnswer(newYesterdayAnswer);
     }
+
     // Debug log for the answer (always show for current day's answer)
     console.log('오늘의 정답 국가:', todayAnswerCountry.name);
   }, [currentDateString, todayAnswerCountry.name]); // Run once per day or on initial mount
@@ -187,6 +223,17 @@ function App() {
       // Check for correctness, using aliases for todayAnswerCountry
       if (matchesCountry(guessedLocation.name, todayAnswerCountry)) {
         setIsCorrect(true);
+
+        // 게임 완료 시 통계 및 아카이브 업데이트
+        const finalGuessCount = existingGuessIndex !== -1 ? uniqueGuessesCount : uniqueGuessesCount + 1;
+        const updatedStats = updateStatsOnGameComplete(finalGuessCount, true, today);
+        setStats(updatedStats);
+
+        const updatedArchive = addToArchive(todayAnswerCountry, finalGuessCount, today, true);
+        setArchive(updatedArchive);
+
+        // 어제의 정답으로 저장 (다음 날을 위해)
+        saveYesterdayAnswer(todayAnswerCountry, finalGuessCount, today);
       }
     } else {
       setError("입력하신 국가를 찾을 수 없습니다. 다른 국가를 시도해주세요.");
@@ -242,6 +289,33 @@ function App() {
     setShowInstructionsModal((prev) => !prev);
   };
 
+  // 광고 시청 처리 (Adinplay 연동)
+  const handleWatchAd = () => {
+    showRewardedAd(
+      // 광고 시청 완료 시
+      () => {
+        const newAdsCount = incrementAdsWatched();
+        setAdsWatchedCount(newAdsCount);
+
+        // 힌트 해금 확인
+        if (canUnlockHint(newAdsCount, 'continent') && !unlockedHints.continent) {
+          const updatedHints = unlockHint('continent');
+          setUnlockedHints(updatedHints);
+          alert('🎉 대륙 힌트가 해금되었습니다!');
+        } else if (canUnlockHint(newAdsCount, 'distance') && !unlockedHints.distance) {
+          const updatedHints = unlockHint('distance');
+          setUnlockedHints(updatedHints);
+          alert('🎉 거리 정보 힌트가 해금되었습니다! 이제 모든 추측에서 거리와 유사도(%)를 볼 수 있습니다.');
+        }
+      },
+      // 광고 로드 실패 시
+      (error) => {
+        console.error('광고 로드 실패:', error);
+        alert('광고를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-4">
       {/* Header */}
@@ -254,6 +328,11 @@ function App() {
           어떻게 플레이하나요?
         </button>
       </header>
+
+      {/* 통계 및 콘텐츠 섹션 */}
+      <GameStats stats={stats} averageGuesses={getAverageGuesses()} />
+      {yesterdayAnswer && <YesterdayAnswer yesterdayData={yesterdayAnswer} />}
+      {archive.length > 0 && <RecentArchive archive={archive} />}
 
       <div className="flex flex-col items-center mt-4 space-y-4 mb-8 w-full max-w-md">
         <img src={world_map_1} alt="World Map 1" className="w-full h-auto rounded-lg shadow-md" />
@@ -298,6 +377,15 @@ function App() {
         </div>
       </section>
 
+      {/* 힌트 시스템 */}
+      <HintSystem
+        answerCountry={todayAnswerCountry}
+        guesses={guesses}
+        adsWatchedCount={adsWatchedCount}
+        unlockedHints={unlockedHints}
+        onWatchAd={handleWatchAd}
+      />
+
       {/* Input Area */}
       <main className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
         <form onSubmit={handleGuess} className="flex flex-col space-y-4">
@@ -326,23 +414,45 @@ function App() {
       <section className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-gray-100 mb-4">내 추측 ({uniqueGuessesCount}회)</h2>
         {guesses.length === 0 ? (
-          <p className="text-gray-400">아직 추측이 없습니다. 첫 번째 국가를 입력해보세요!</p>
+          <div className="text-gray-400">
+            <p className="mb-2">아직 추측이 없습니다. 첫 번째 국가를 입력해보세요!</p>
+            {!unlockedHints.distance && (
+              <p className="text-sm text-yellow-400 mt-3">
+                💡 힌트: 기본적으로 <strong>방향</strong>만 표시됩니다.
+                광고를 시청하면 <strong>거리와 유사도(%)</strong>를 볼 수 있어요!
+              </p>
+            )}
+          </div>
         ) : (
           <ul className="space-y-3">
             {guesses.map((item, index) => (
-              <li
-                key={index}
-                className="flex justify-between items-center p-3 bg-gray-700 rounded-md border border-gray-600"
-              >
-                <span className="text-gray-200 font-medium">{item.name}</span>
-                <div className="flex items-center space-x-4">
-                  <span className="text-gray-300">{item.distance} km</span>
-                  <span className="text-2xl">{item.direction}</span>
-                  <span className={`font-bold ${getSimilarityColor(item.similarity)}`}>
-                    {item.similarity}%
-                  </span>
-                </div>
-              </li>
+              <React.Fragment key={index}>
+                <li
+                  className="flex justify-between items-center p-3 bg-gray-700 rounded-md border border-gray-600"
+                >
+                  <span className="text-gray-200 font-medium">{item.name}</span>
+                  <div className="flex items-center space-x-4">
+                    {/* 거리 정보 힌트 해금 시에만 표시 */}
+                    {unlockedHints.distance && (
+                      <span className="text-gray-300">{item.distance} km</span>
+                    )}
+                    {/* 방향은 항상 표시 */}
+                    <span className="text-2xl">{item.direction}</span>
+                    {/* 유사도(%) 힌트 해금 시에만 표시 */}
+                    {unlockedHints.distance && (
+                      <span className={`font-bold ${getSimilarityColor(item.similarity)}`}>
+                        {item.similarity}%
+                      </span>
+                    )}
+                  </div>
+                </li>
+                {/* 3번째 추측 후 광고 삽입 */}
+                {index === 2 && guesses.length >= 3 && (
+                  <li className="my-4">
+                    <AdSenseAd adSlot="YOUR_AD_SLOT_ID_2" style={{ minHeight: '100px' }} />
+                  </li>
+                )}
+              </React.Fragment>
             ))}
           </ul>
         )}
@@ -365,10 +475,15 @@ function App() {
             </p>
             <button
               onClick={handleCopyResults}
-              className="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors"
+              className="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors mb-4"
             >
               {copyFeedback}
             </button>
+
+            {/* 게임 완료 후 광고 */}
+            <div className="mt-4">
+              <AdSenseAd adSlot="YOUR_AD_SLOT_ID" />
+            </div>
           </div>
         </div>
       )}
