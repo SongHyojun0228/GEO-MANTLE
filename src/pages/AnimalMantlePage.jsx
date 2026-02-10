@@ -1,39 +1,39 @@
 import React, { useState, useEffect } from "react";
-import { getDailyNumber, calculateSimilarity } from "../utils/numGame";
+import { getDailyAnimal, findAnimalByName, calculateAnimalSimilarity } from "../utils/animalGame";
 import {
-  getNumStats,
-  updateNumStatsOnGameComplete,
-  getNumAverageGuesses,
-  getNumAdsWatched,
-  incrementNumAdsWatched,
-  checkAndResetNumForNewDay,
+  getAnimalStats,
+  updateAnimalStatsOnGameComplete,
+  getAnimalAverageGuesses,
+  getAnimalAdsWatched,
+  incrementAnimalAdsWatched,
+  checkAndResetAnimalForNewDay,
 } from "../utils/storage";
 import { showRewardedAd } from "../utils/adinplay";
 import { useLanguage } from "../i18n/LanguageContext";
 import GameStats from "../components/GameStats";
-import NumMantleHintSystem from "../components/NumMantleHintSystem";
+import AnimalMantleHintSystem from "../components/AnimalMantleHintSystem";
 import AdSenseAd from "../components/AdSenseAd";
 
-function NumMantlePage() {
+function AnimalMantlePage() {
   const { lang, t } = useLanguage();
 
   const today = new Date();
   const currentDateString = today.toDateString();
-  const todayAnswer = getDailyNumber(today);
+  const todayAnswer = getDailyAnimal(today);
 
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState(() => {
-    const savedDate = localStorage.getItem("numMantle_date");
+    const savedDate = localStorage.getItem("animalMantle_date");
     if (savedDate === currentDateString) {
-      const saved = localStorage.getItem("numMantle_guesses");
+      const saved = localStorage.getItem("animalMantle_guesses");
       return saved ? JSON.parse(saved) : [];
     }
     return [];
   });
   const [isCorrect, setIsCorrect] = useState(() => {
-    const savedDate = localStorage.getItem("numMantle_date");
+    const savedDate = localStorage.getItem("animalMantle_date");
     if (savedDate === currentDateString) {
-      const saved = localStorage.getItem("numMantle_isCorrect");
+      const saved = localStorage.getItem("animalMantle_isCorrect");
       return saved ? JSON.parse(saved) : false;
     }
     return false;
@@ -41,19 +41,19 @@ function NumMantlePage() {
   const [error, setError] = useState("");
   const [copyFeedback, setCopyFeedback] = useState("");
   const [uniqueGuessesCount, setUniqueGuessesCount] = useState(() => {
-    const savedDate = localStorage.getItem("numMantle_date");
+    const savedDate = localStorage.getItem("animalMantle_date");
     if (savedDate === currentDateString) {
-      const saved = localStorage.getItem("numMantle_uniqueGuessesCount");
+      const saved = localStorage.getItem("animalMantle_uniqueGuessesCount");
       return saved ? JSON.parse(saved) : 0;
     }
     return 0;
   });
 
-  const [stats, setStats] = useState(() => getNumStats());
-  const [adsWatchedCount, setAdsWatchedCount] = useState(() => getNumAdsWatched());
+  const [stats, setStats] = useState(() => getAnimalStats());
+  const [adsWatchedCount, setAdsWatchedCount] = useState(() => getAnimalAdsWatched());
 
   useEffect(() => {
-    const isNewDay = checkAndResetNumForNewDay(currentDateString);
+    const isNewDay = checkAndResetAnimalForNewDay(currentDateString);
     if (isNewDay) {
       setGuesses([]);
       setIsCorrect(false);
@@ -62,45 +62,48 @@ function NumMantlePage() {
     }
 
     if (new URLSearchParams(window.location.search).has('debug')) {
-      console.log("Today's NumMantle answer:", todayAnswer);
+      console.log("Today's AnimalMantle answer:", todayAnswer);
     }
   }, [currentDateString, todayAnswer]);
 
   useEffect(() => {
-    localStorage.setItem("numMantle_guesses", JSON.stringify(guesses));
+    localStorage.setItem("animalMantle_guesses", JSON.stringify(guesses));
   }, [guesses]);
 
   useEffect(() => {
-    localStorage.setItem("numMantle_isCorrect", JSON.stringify(isCorrect));
+    localStorage.setItem("animalMantle_isCorrect", JSON.stringify(isCorrect));
   }, [isCorrect]);
 
   useEffect(() => {
-    localStorage.setItem("numMantle_uniqueGuessesCount", JSON.stringify(uniqueGuessesCount));
+    localStorage.setItem("animalMantle_uniqueGuessesCount", JSON.stringify(uniqueGuessesCount));
   }, [uniqueGuessesCount]);
 
   const handleGuess = (e) => {
     e.preventDefault();
     setError("");
 
-    const num = parseInt(guess, 10);
-    if (!guess || isNaN(num)) {
-      setError(t('numEnterNumber'));
-      return;
-    }
-    if (num < 1 || num > 9999) {
-      setError(t('numRangeError'));
+    if (!guess.trim()) {
+      setError(t('animalEnterName'));
       return;
     }
 
-    const similarity = calculateSimilarity(num, todayAnswer);
+    const animal = findAnimalByName(guess);
+    if (!animal) {
+      setError(t('animalNotFound'));
+      return;
+    }
+
+    const similarity = calculateAnimalSimilarity(animal, todayAnswer);
+    const displayName = lang === 'en' ? animal.englishName : animal.name;
 
     const newGuess = {
-      number: num,
-      similarity: similarity.toFixed(2),
+      name: animal.name,
+      englishName: animal.englishName,
+      similarity,
     };
 
     // Check for duplicate
-    const existingIndex = guesses.findIndex((g) => g.number === num);
+    const existingIndex = guesses.findIndex((g) => g.name === animal.name);
     if (existingIndex !== -1) {
       const updated = guesses.filter((_, i) => i !== existingIndex);
       setGuesses([newGuess, ...updated]);
@@ -109,15 +112,15 @@ function NumMantlePage() {
       setUniqueGuessesCount((prev) => prev + 1);
     }
 
-    if (num === todayAnswer) {
+    if (animal.name === todayAnswer.name) {
       setIsCorrect(true);
       const finalGuessCount = existingIndex !== -1 ? uniqueGuessesCount : uniqueGuessesCount + 1;
-      const updatedStats = updateNumStatsOnGameComplete(finalGuessCount, true, today);
+      const updatedStats = updateAnimalStatsOnGameComplete(finalGuessCount, true, today);
       setStats(updatedStats);
 
       if (window.gtag) {
-        window.gtag('event', 'num_game_completed', {
-          answer: todayAnswer,
+        window.gtag('event', 'animal_game_completed', {
+          answer: todayAnswer.englishName,
           guesses: finalGuessCount,
           language: lang,
         });
@@ -128,23 +131,24 @@ function NumMantlePage() {
   };
 
   const getSimilarityColor = (similarity) => {
-    const sim = parseFloat(similarity);
-    if (sim >= 99) return "text-red-500";
-    if (sim >= 95) return "text-orange-400";
-    if (sim >= 80) return "text-yellow-300";
+    if (similarity >= 90) return "text-red-500";
+    if (similarity >= 70) return "text-orange-400";
+    if (similarity >= 50) return "text-yellow-300";
     return "text-gray-400";
   };
 
   const formatResultsForClipboard = () => {
-    let result = `NumMantle #\n`;
-    result += `${t('numTodaysAnswer')}: ${todayAnswer}\n\n`;
+    const answerName = lang === 'en' ? todayAnswer.englishName : todayAnswer.name;
+    let result = `AnimalMantle #\n`;
+    result += `${t('animalTodaysAnswer')}: ${answerName}\n\n`;
     result += `${t('myGuessResult')}: ${uniqueGuessesCount}${t('successIn')}\n\n`;
 
     guesses.forEach((item) => {
-      const mark = item.number === todayAnswer ? " OK" : "";
-      result += `${item.number} - ${item.similarity}%${mark}\n`;
+      const name = lang === 'en' ? item.englishName : item.name;
+      const mark = item.name === todayAnswer.name ? " OK" : "";
+      result += `${name} - ${item.similarity}%${mark}\n`;
     });
-    result += `\n#NumMantle`;
+    result += `\n#AnimalMantle`;
     return result;
   };
 
@@ -168,7 +172,7 @@ function NumMantlePage() {
   const handleWatchAd = () => {
     showRewardedAd(
       () => {
-        const newCount = incrementNumAdsWatched();
+        const newCount = incrementAnimalAdsWatched();
         setAdsWatchedCount(newCount);
       },
       (error) => {
@@ -178,13 +182,15 @@ function NumMantlePage() {
     );
   };
 
+  const answerDisplayName = lang === 'en' ? todayAnswer.englishName : todayAnswer.name;
+
   return (
     <>
       {/* Stats */}
-      <GameStats stats={stats} averageGuesses={getNumAverageGuesses()} />
+      <GameStats stats={stats} averageGuesses={getAnimalAverageGuesses()} />
 
       {/* Hint System */}
-      <NumMantleHintSystem
+      <AnimalMantleHintSystem
         answer={todayAnswer}
         adsWatchedCount={adsWatchedCount}
         onWatchAd={handleWatchAd}
@@ -194,12 +200,10 @@ function NumMantlePage() {
       <main className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
         <form onSubmit={handleGuess} className="flex flex-col space-y-4">
           <input
-            type="number"
+            type="text"
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
-            placeholder={t('numInputPlaceholder')}
-            min="1"
-            max="9999"
+            placeholder={t('animalInputPlaceholder')}
             className="p-3 rounded-md bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-100"
           />
           <button
@@ -219,7 +223,7 @@ function NumMantlePage() {
         </h2>
         {guesses.length === 0 ? (
           <div className="text-gray-400">
-            <p>{t('numNoGuessesYet')}</p>
+            <p>{t('animalNoGuessesYet')}</p>
           </div>
         ) : (
           <ul className="space-y-3">
@@ -227,7 +231,7 @@ function NumMantlePage() {
               <React.Fragment key={index}>
                 <li className="flex justify-between items-center p-3 bg-gray-700 rounded-md border border-gray-600">
                   <span className="text-gray-200 font-medium text-lg">
-                    {item.number}
+                    {lang === 'en' ? item.englishName : item.name}
                   </span>
                   <span className={`font-bold text-lg ${getSimilarityColor(item.similarity)}`}>
                     {item.similarity}%
@@ -263,8 +267,8 @@ function NumMantlePage() {
             </h2>
             <p className="text-gray-200 mb-2">
               {t('congratulations')}{" "}
-              <span className="font-semibold">{todayAnswer}</span>
-              {t('numYouGuessed')}
+              <span className="font-semibold">{answerDisplayName}</span>
+              {t('animalYouGuessed')}
             </p>
             <p className="text-4xl font-bold text-teal-300 mb-6">
               {uniqueGuessesCount}{t('guessCountResult')}
@@ -285,4 +289,4 @@ function NumMantlePage() {
   );
 }
 
-export default NumMantlePage;
+export default AnimalMantlePage;

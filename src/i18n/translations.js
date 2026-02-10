@@ -133,6 +133,30 @@ const translations = {
     numHintDivisible: (divs) => `${divs}(으)로 나누어집니다.`,
     numHintNotDivisible: '3, 5, 7 어느 것으로도 나누어지지 않습니다.',
     numHintRange: (start, end) => `${start} ~ ${end} 범위에 있습니다.`,
+
+    // AnimalMantle
+    animalInputPlaceholder: '동물 이름을 입력하세요...',
+    animalEnterName: '동물 이름을 입력해주세요.',
+    animalNotFound: '입력하신 동물을 찾을 수 없습니다. 다른 동물을 시도해주세요.',
+    animalNoGuessesYet: '아직 추측이 없습니다. 첫 번째 동물을 입력해보세요!',
+    animalYouGuessed: '이(가) 정답이었습니다!',
+    animalTodaysAnswer: '오늘의 정답',
+    animalWatchAdHint: '광고 보고 힌트 받기',
+
+    // AnimalMantle Instructions
+    animalInstructionsTitle: 'AnimalMantle 게임 방법',
+    animalInstruction1: '매일 새로운 동물이 정답으로 선정됩니다. 목표는 이 동물을 맞히는 것입니다.',
+    animalInstruction2: '동물 이름을 입력하면 정답 동물과의 **속성 유사도(%)**가 표시됩니다. 유사도는 분류, 식성, 다리 수, 서식지, 크기, 대륙, 활동시간 등 7가지 속성을 비교하여 계산됩니다.',
+    animalInstruction3: '유사도가 높을수록 정답 동물과 비슷한 속성을 가진 동물이라는 뜻입니다.',
+    animalInstruction4: '광고를 시청하면 분류, 서식지, 식성, 대륙, 크기 등 총 5단계의 힌트를 해금할 수 있습니다.',
+    animalInstruction5: '추측 기록은 매일 자정에 초기화됩니다.',
+
+    // AnimalMantle Hints
+    animalHintClass: (cls) => `🐾 분류 힌트: 정답 동물은 ${cls}입니다.`,
+    animalHintHabitat: (hab) => `🏠 서식지 힌트: 정답 동물은 ${hab}에 삽니다.`,
+    animalHintDiet: (diet) => `🍽️ 식성 힌트: 정답 동물은 ${diet}입니다.`,
+    animalHintContinent: (cont) => `🌍 대륙 힌트: 정답 동물은 ${cont}에 서식합니다.`,
+    animalHintSize: (size) => `📏 크기 힌트: 정답 동물은 ${size}입니다.`,
   },
 
   en: {
@@ -269,6 +293,30 @@ const translations = {
     numHintDivisible: (divs) => `Divisible by ${divs}.`,
     numHintNotDivisible: 'Not divisible by 3, 5, or 7.',
     numHintRange: (start, end) => `The number is in the range ${start} ~ ${end}.`,
+
+    // AnimalMantle
+    animalInputPlaceholder: 'Enter an animal name...',
+    animalEnterName: 'Please enter an animal name.',
+    animalNotFound: 'Animal not found. Please try another animal.',
+    animalNoGuessesYet: 'No guesses yet. Try entering your first animal!',
+    animalYouGuessed: ' was the answer!',
+    animalTodaysAnswer: "Today's Answer",
+    animalWatchAdHint: 'Watch ad for hint',
+
+    // AnimalMantle Instructions
+    animalInstructionsTitle: 'How to Play AnimalMantle',
+    animalInstruction1: 'Every day, a new animal is selected as the answer. Your goal is to guess this animal.',
+    animalInstruction2: 'When you enter an animal name, the **attribute similarity (%)** to the answer is shown. Similarity is calculated by comparing 7 attributes: class, diet, legs, habitat, size, continent, and activity.',
+    animalInstruction3: 'Higher similarity means the guessed animal shares more attributes with the answer.',
+    animalInstruction4: 'Watch ads to unlock up to 5 hint levels: class, habitat, diet, continent, and size.',
+    animalInstruction5: 'Your guesses reset every day at midnight.',
+
+    // AnimalMantle Hints
+    animalHintClass: (cls) => `🐾 Class: The answer is a ${cls}.`,
+    animalHintHabitat: (hab) => `🏠 Habitat: The answer lives in ${hab}.`,
+    animalHintDiet: (diet) => `🍽️ Diet: The answer is ${diet}.`,
+    animalHintContinent: (cont) => `🌍 Continent: The answer lives in ${cont}.`,
+    animalHintSize: (size) => `📏 Size: The answer is ${size}.`,
   },
 };
 

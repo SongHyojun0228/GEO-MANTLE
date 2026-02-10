@@ -5,6 +5,7 @@ import './index.css'
 import SharedLayout from './layouts/SharedLayout.jsx'
 import GeoMantlePage from './pages/GeoMantlePage.jsx'
 import NumMantlePage from './pages/NumMantlePage.jsx'
+import AnimalMantlePage from './pages/AnimalMantlePage.jsx'
 
 const router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/', element: <GeoMantlePage /> },
       { path: '/num', element: <NumMantlePage /> },
+      { path: '/animal', element: <AnimalMantlePage /> },
     ],
   },
 ])

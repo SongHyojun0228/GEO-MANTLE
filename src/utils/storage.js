@@ -308,4 +308,106 @@ export function checkAndResetNumForNewDay(currentDateString) {
   return false;
 }
 
+// ============================================================
+// AnimalMantle storage functions
+// ============================================================
+
+const ANIMAL_KEYS = {
+  DATE: 'animalMantle_date',
+  GUESSES: 'animalMantle_guesses',
+  IS_CORRECT: 'animalMantle_isCorrect',
+  UNIQUE_GUESSES_COUNT: 'animalMantle_uniqueGuessesCount',
+  STATS: 'animalMantle_stats',
+  ADS_WATCHED: 'animalMantle_adsWatched',
+};
+
+const ANIMAL_DEFAULT_STATS = {
+  totalPlays: 0,
+  totalGuesses: 0,
+  successfulGames: 0,
+  currentStreak: 0,
+  bestStreak: 0,
+  lastPlayedDate: null,
+};
+
+export function getAnimalStats() {
+  const saved = localStorage.getItem(ANIMAL_KEYS.STATS);
+  return saved ? JSON.parse(saved) : { ...ANIMAL_DEFAULT_STATS };
+}
+
+export function saveAnimalStats(stats) {
+  localStorage.setItem(ANIMAL_KEYS.STATS, JSON.stringify(stats));
+}
+
+export function updateAnimalStatsOnGameComplete(guessCount, isSuccess, currentDate) {
+  const stats = getAnimalStats();
+  const today = new Date(currentDate).toDateString();
+
+  stats.totalPlays += 1;
+  stats.totalGuesses += guessCount;
+
+  if (isSuccess) {
+    stats.successfulGames += 1;
+
+    if (stats.lastPlayedDate) {
+      const yesterday = new Date(currentDate);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (stats.lastPlayedDate === yesterday.toDateString()) {
+        stats.currentStreak += 1;
+      } else {
+        stats.currentStreak = 1;
+      }
+    } else {
+      stats.currentStreak = 1;
+    }
+
+    if (stats.currentStreak > stats.bestStreak) {
+      stats.bestStreak = stats.currentStreak;
+    }
+  } else {
+    stats.currentStreak = 0;
+  }
+
+  stats.lastPlayedDate = today;
+  saveAnimalStats(stats);
+  return stats;
+}
+
+export function getAnimalAverageGuesses() {
+  const stats = getAnimalStats();
+  if (stats.successfulGames === 0) return 0;
+  return (stats.totalGuesses / stats.successfulGames).toFixed(1);
+}
+
+export function getAnimalAdsWatched() {
+  const saved = localStorage.getItem(ANIMAL_KEYS.ADS_WATCHED);
+  return saved ? parseInt(saved, 10) : 0;
+}
+
+export function incrementAnimalAdsWatched() {
+  const current = getAnimalAdsWatched();
+  const newCount = current + 1;
+  localStorage.setItem(ANIMAL_KEYS.ADS_WATCHED, newCount.toString());
+  return newCount;
+}
+
+export function resetAnimalAdsWatched() {
+  localStorage.setItem(ANIMAL_KEYS.ADS_WATCHED, '0');
+}
+
+export function checkAndResetAnimalForNewDay(currentDateString) {
+  const savedDate = localStorage.getItem(ANIMAL_KEYS.DATE);
+
+  if (savedDate !== currentDateString) {
+    localStorage.setItem(ANIMAL_KEYS.DATE, currentDateString);
+    localStorage.removeItem(ANIMAL_KEYS.GUESSES);
+    localStorage.removeItem(ANIMAL_KEYS.IS_CORRECT);
+    localStorage.removeItem(ANIMAL_KEYS.UNIQUE_GUESSES_COUNT);
+    resetAnimalAdsWatched();
+    return true;
+  }
+
+  return false;
+}
+
 export default KEYS;

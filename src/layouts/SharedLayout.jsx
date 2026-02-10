@@ -11,12 +11,13 @@ function SharedLayoutInner() {
   const location = useLocation();
 
   const isNumMantle = location.pathname === '/num';
+  const isAnimalMantle = location.pathname === '/animal';
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-4">
       {/* Title */}
       <h1 className="text-3xl font-bold text-teal-400 mb-2">
-        {isNumMantle ? '#️ NumMantle' : 'Geo-Mantle'}
+        {isAnimalMantle ? '🐾 AnimalMantle' : isNumMantle ? '#️ NumMantle' : 'Geo-Mantle'}
       </h1>
 
       <NavBar onShowInstructions={() => setShowInstructionsModal(true)} />
@@ -46,10 +47,18 @@ function SharedLayoutInner() {
               &times;
             </button>
             <h2 className="text-3xl font-bold text-teal-400 mb-4">
-              {isNumMantle ? t('numInstructionsTitle') : t('instructionsTitle')}
+              {isAnimalMantle ? t('animalInstructionsTitle') : isNumMantle ? t('numInstructionsTitle') : t('instructionsTitle')}
             </h2>
             <div className="text-gray-200 space-y-3">
-              {isNumMantle ? (
+              {isAnimalMantle ? (
+                <>
+                  <p>{t('animalInstruction1')}</p>
+                  <p>{t('animalInstruction2')}</p>
+                  <p>{t('animalInstruction3')}</p>
+                  <p>{t('animalInstruction4')}</p>
+                  <p>{t('animalInstruction5')}</p>
+                </>
+              ) : isNumMantle ? (
                 <>
                   <p>{t('numInstruction1')}</p>
                   <p>{t('numInstruction2')}</p>
