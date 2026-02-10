@@ -279,6 +279,15 @@ function App() {
         setArchive(updatedArchive);
 
         saveYesterdayAnswer(todayAnswerCountry, finalGuessCount, today);
+
+        // GA4 이벤트 트래킹
+        if (window.gtag) {
+          window.gtag('event', 'game_completed', {
+            country: todayAnswerCountry.englishName,
+            guesses: finalGuessCount,
+            language: lang,
+          });
+        }
       }
     } else {
       setError(t('countryNotFound'));
