@@ -27,6 +27,7 @@ const translations = {
     copied: '복사 완료!',
     copyFailed: '복사 실패!',
     closeModal: '모달 닫기',
+    guessCountResult: '번만에 정답!',
 
     // Results clipboard
     todaysAnswer: '오늘의 정답',
@@ -135,6 +136,7 @@ const translations = {
     copied: 'Copied!',
     copyFailed: 'Copy Failed!',
     closeModal: 'Close modal',
+    guessCountResult: ' guesses to solve!',
 
     // Results clipboard
     todaysAnswer: "Today's Answer",

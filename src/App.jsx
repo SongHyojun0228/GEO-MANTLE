@@ -559,13 +559,16 @@ function App() {
             >
               &times;
             </button>
-            <h2 className="text-3xl font-bold text-green-400 mb-4">
+            <h2 className="text-3xl font-bold text-green-400 mb-2">
               {t('correct')}
             </h2>
-            <p className="text-gray-200 mb-6">
+            <p className="text-gray-200 mb-2">
               {t('congratulations')}{" "}
               <span className="font-semibold">{answerDisplayName}</span>
               {t('youGuessed')}
+            </p>
+            <p className="text-4xl font-bold text-teal-300 mb-6">
+              {uniqueGuessesCount}{t('guessCountResult')}
             </p>
             <button
               onClick={handleCopyResults}
