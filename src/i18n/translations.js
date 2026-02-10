@@ -82,6 +82,21 @@ const translations = {
     recentArchive: '📜 최근 7일 기록',
     guessUnit: '회',
 
+    // Privacy Policy
+    privacyPolicy: '개인정보처리방침',
+    privacyIntro: 'Geo-Mantle(이하 "서비스")는 이용자의 개인정보를 중요하게 생각하며, 아래와 같이 개인정보처리방침을 안내합니다.',
+    privacySection1Title: '1. 수집하는 개인정보',
+    privacySection1Content: '본 서비스는 별도의 회원가입 없이 이용 가능하며, 서버에 개인정보를 저장하지 않습니다. 게임 진행 데이터(추측 기록, 통계, 언어 설정 등)는 사용자의 브라우저 localStorage에만 저장되며, 외부로 전송되지 않습니다.',
+    privacySection2Title: '2. 광고 서비스',
+    privacySection2Content: '본 서비스는 Google AdSense 및 Adinplay를 통해 광고를 제공할 수 있습니다. 이 과정에서 광고 제공업체가 쿠키를 사용하여 사용자의 관심사 기반 광고를 표시할 수 있습니다. 자세한 내용은 Google 개인정보처리방침(https://policies.google.com/privacy)을 참고하세요.',
+    privacySection3Title: '3. 분석 서비스',
+    privacySection3Content: '본 서비스는 Vercel Analytics를 사용하여 익명화된 방문 통계를 수집합니다. 이는 서비스 개선 목적으로만 사용되며, 개인을 식별할 수 있는 정보는 수집하지 않습니다.',
+    privacySection4Title: '4. 쿠키 사용',
+    privacySection4Content: '본 서비스는 자체적으로 쿠키를 사용하지 않습니다. 다만, 광고 및 분석 서비스 제공업체가 쿠키를 사용할 수 있습니다.',
+    privacySection5Title: '5. 문의',
+    privacySection5Content: '개인정보 관련 문의사항은 GitHub 저장소의 Issues를 통해 연락해주세요.',
+    privacyLastUpdated: '최종 수정일: 2025년 6월',
+
     // Continent names
     continentAsia: '아시아',
     continentEurope: '유럽',
@@ -174,6 +189,21 @@ const translations = {
     // RecentArchive
     recentArchive: '📜 Last 7 Days',
     guessUnit: '',
+
+    // Privacy Policy
+    privacyPolicy: 'Privacy Policy',
+    privacyIntro: 'Geo-Mantle ("the Service") values your privacy. This policy explains how we handle your information.',
+    privacySection1Title: '1. Information We Collect',
+    privacySection1Content: 'This service does not require registration and does not store any personal data on our servers. Game data (guess history, statistics, language preferences, etc.) is stored only in your browser\'s localStorage and is never transmitted externally.',
+    privacySection2Title: '2. Advertising',
+    privacySection2Content: 'This service may display ads through Google AdSense and Adinplay. These advertising partners may use cookies to show interest-based ads. For more details, see Google\'s Privacy Policy (https://policies.google.com/privacy).',
+    privacySection3Title: '3. Analytics',
+    privacySection3Content: 'This service uses Vercel Analytics to collect anonymized visit statistics for service improvement purposes only. No personally identifiable information is collected.',
+    privacySection4Title: '4. Cookies',
+    privacySection4Content: 'This service does not use cookies directly. However, advertising and analytics providers may use cookies.',
+    privacySection5Title: '5. Contact',
+    privacySection5Content: 'For privacy-related inquiries, please contact us through the GitHub repository Issues page.',
+    privacyLastUpdated: 'Last updated: June 2025',
 
     // Continent names
     continentAsia: 'Asia',
