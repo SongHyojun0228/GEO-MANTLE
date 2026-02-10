@@ -36,7 +36,11 @@ export function findAnimalByName(input) {
 }
 
 // 속성 기반 유사도 계산 (0~100)
+// 100%는 정답만 가능. 속성이 모두 같아도 다른 동물이면 최대 99%
 export function calculateAnimalSimilarity(guess, answer) {
+  // 정답이면 바로 100
+  if (guess.name === answer.name) return 100;
+
   let score = 0;
 
   // class (25점)
@@ -62,5 +66,6 @@ export function calculateAnimalSimilarity(guess, answer) {
   // active (10점)
   if (guess.active === answer.active) score += 10;
 
-  return score;
+  // 정답이 아니면 최대 99%
+  return Math.min(score, 99);
 }
