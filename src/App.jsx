@@ -126,7 +126,9 @@ function App() {
       setYesterdayAnswer(newYesterdayAnswer);
     }
 
-    console.log("Today's answer:", todayAnswerCountry.name);
+    if (new URLSearchParams(window.location.search).has('debug')) {
+      console.log("Today's answer:", todayAnswerCountry.name, todayAnswerCountry.englishName);
+    }
   }, [currentDateString, todayAnswerCountry.name]);
 
   useEffect(() => {
