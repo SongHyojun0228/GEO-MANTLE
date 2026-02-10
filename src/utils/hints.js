@@ -1,3 +1,5 @@
+import translations from '../i18n/translations';
+
 // 대륙 정보 매핑
 const CONTINENT_MAP = {
   // 아시아
@@ -29,38 +31,47 @@ export function getContinentByCountry(countryName) {
   return 'Unknown';
 }
 
-// 대륙 이름을 한국어로 변환
-export function getContinentKoreanName(continentEnglish) {
-  const koreanNames = {
-    'Asia': '아시아',
-    'Europe': '유럽',
-    'Africa': '아프리카',
-    'North America': '북아메리카',
-    'South America': '남아메리카',
-    'Oceania': '오세아니아',
-    'Unknown': '알 수 없음',
+// 대륙 영어 키를 현재 언어의 대륙명으로 변환
+function getContinentDisplayName(continentEnglish, lang) {
+  const keyMap = {
+    'Asia': 'continentAsia',
+    'Europe': 'continentEurope',
+    'Africa': 'continentAfrica',
+    'North America': 'continentNorthAmerica',
+    'South America': 'continentSouthAmerica',
+    'Oceania': 'continentOceania',
+    'Unknown': 'continentUnknown',
   };
-  return koreanNames[continentEnglish] || continentEnglish;
+  const translationKey = keyMap[continentEnglish] || 'continentUnknown';
+  return translations[lang]?.[translationKey] ?? continentEnglish;
+}
+
+// 대륙 이름을 한국어로 변환 (기존 호환성 유지)
+export function getContinentKoreanName(continentEnglish) {
+  return getContinentDisplayName(continentEnglish, 'ko');
 }
 
 // 대륙 힌트 생성
-export function generateContinentHint(answerCountry) {
+export function generateContinentHint(answerCountry, lang = 'ko') {
   const continent = getContinentByCountry(answerCountry.name);
-  const continentKorean = getContinentKoreanName(continent);
+  const continentName = getContinentDisplayName(continent, lang);
+  const t = translations[lang];
 
   return {
     type: 'continent',
-    message: `🌍 대륙 힌트: 정답 국가는 <strong>${continentKorean}</strong>에 위치해 있습니다!`,
-    continent: continentKorean,
+    message: t.continentHintMsg(continentName),
+    continent: continentName,
   };
 }
 
-// 거리/유사도 힌트 생성 (상세 정보 표시)
-export function generateDistanceHint(guesses) {
+// 거리/유사도 힌트 생성
+export function generateDistanceHint(guesses, lang = 'ko') {
+  const t = translations[lang];
+
   if (guesses.length === 0) {
     return {
       type: 'distance',
-      message: '📏 거리 정보 힌트: 아직 추측이 없습니다. 먼저 국가를 추측해보세요!',
+      message: t.distanceHintNoGuess,
     };
   }
 
@@ -71,10 +82,12 @@ export function generateDistanceHint(guesses) {
     return currentDistance < closestDistance ? current : closest;
   });
 
+  const displayName = lang === 'en' ? (closestGuess.englishName || closestGuess.name) : closestGuess.name;
+
   return {
     type: 'distance',
-    message: `📏 거리 정보 힌트: 이제 모든 추측에서 <strong>거리와 유사도(%)</strong>를 볼 수 있습니다! 가장 가까운 추측은 <strong>${closestGuess.name}</strong> (${closestGuess.distance}km, ${closestGuess.similarity}%)입니다.`,
-    closestGuess: closestGuess.name,
+    message: t.distanceHintMsg(displayName, closestGuess.distance, closestGuess.similarity),
+    closestGuess: displayName,
     direction: closestGuess.direction,
     distance: closestGuess.distance,
     similarity: closestGuess.similarity,
@@ -100,5 +113,5 @@ export function adsNeededForNextHint(adsWatchedCount, unlockedHints) {
   if (!unlockedHints.distance) {
     return { needed: 2 - adsWatchedCount, hintType: 'distance' };
   }
-  return { needed: 0, hintType: null }; // 모든 힌트 해금됨
+  return { needed: 0, hintType: null };
 }
