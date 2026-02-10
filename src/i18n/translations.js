@@ -106,6 +106,33 @@ const translations = {
     continentSouthAmerica: '남아메리카',
     continentOceania: '오세아니아',
     continentUnknown: '알 수 없음',
+
+    // NumMantle
+    numInputPlaceholder: '1~9999 사이의 숫자를 입력하세요...',
+    numEnterNumber: '숫자를 입력해주세요.',
+    numRangeError: '1에서 9999 사이의 숫자를 입력해주세요.',
+    numNoGuessesYet: '아직 추측이 없습니다. 첫 번째 숫자를 입력해보세요!',
+    numYouGuessed: '이(가) 정답이었습니다!',
+    numTodaysAnswer: '오늘의 정답',
+    numWatchAdHint: '광고 보고 힌트 받기',
+
+    // NumMantle Instructions
+    numInstructionsTitle: 'NumMantle 게임 방법',
+    numInstruction1: '매일 1~9999 사이의 새로운 숫자가 정답으로 선정됩니다. 목표는 이 숫자를 맞히는 것입니다.',
+    numInstruction2: '숫자를 입력하면 정답과의 **유사도(%)**가 표시됩니다. 유사도는 입력한 숫자와 정답의 차이를 기반으로 계산됩니다. 예를 들어 정답이 5000일 때 4900을 입력하면 약 99.0%, 1을 입력하면 약 50.0%가 됩니다. 유사도가 높을수록 정답에 가깝다는 뜻입니다.',
+    numInstruction3: '이 게임은 higher/lower(높다/낮다) 힌트를 제공하지 않습니다. 오직 유사도(%)만으로 정답을 추론해야 합니다.',
+    numInstruction4: '광고를 시청하면 짝수/홀수, 자릿수, 소수 여부, 나눗셈 속성, 범위 등 총 5단계의 힌트를 해금할 수 있습니다.',
+    numInstruction5: '추측 기록은 매일 자정에 초기화됩니다.',
+
+    // NumMantle Hints
+    numHintEven: '짝수입니다.',
+    numHintOdd: '홀수입니다.',
+    numHintDigits: (d) => `${d}자리 수입니다.`,
+    numHintIsPrime: '소수입니다.',
+    numHintNotPrime: '소수가 아닙니다.',
+    numHintDivisible: (divs) => `${divs}(으)로 나누어집니다.`,
+    numHintNotDivisible: '3, 5, 7 어느 것으로도 나누어지지 않습니다.',
+    numHintRange: (start, end) => `${start} ~ ${end} 범위에 있습니다.`,
   },
 
   en: {
@@ -215,6 +242,33 @@ const translations = {
     continentSouthAmerica: 'South America',
     continentOceania: 'Oceania',
     continentUnknown: 'Unknown',
+
+    // NumMantle
+    numInputPlaceholder: 'Enter a number between 1 and 9999...',
+    numEnterNumber: 'Please enter a number.',
+    numRangeError: 'Please enter a number between 1 and 9999.',
+    numNoGuessesYet: 'No guesses yet. Try entering your first number!',
+    numYouGuessed: ' was the answer!',
+    numTodaysAnswer: "Today's Answer",
+    numWatchAdHint: 'Watch ad for hint',
+
+    // NumMantle Instructions
+    numInstructionsTitle: 'How to Play NumMantle',
+    numInstruction1: 'Every day, a new number between 1 and 9999 is selected as the answer. Your goal is to guess this number.',
+    numInstruction2: 'When you enter a number, the **similarity (%)** to the answer is shown. Similarity is calculated based on the difference between your guess and the answer. For example, if the answer is 5000, guessing 4900 gives ~99.0%, while guessing 1 gives ~50.0%. Higher similarity means you are closer to the answer.',
+    numInstruction3: 'This game does NOT tell you higher/lower. You must deduce the answer using only the similarity percentage.',
+    numInstruction4: 'Watch ads to unlock up to 5 hint levels: even/odd, number of digits, prime status, divisibility, and range.',
+    numInstruction5: 'Your guesses reset every day at midnight.',
+
+    // NumMantle Hints
+    numHintEven: 'The number is even.',
+    numHintOdd: 'The number is odd.',
+    numHintDigits: (d) => `The number has ${d} digit(s).`,
+    numHintIsPrime: 'The number is prime.',
+    numHintNotPrime: 'The number is not prime.',
+    numHintDivisible: (divs) => `Divisible by ${divs}.`,
+    numHintNotDivisible: 'Not divisible by 3, 5, or 7.',
+    numHintRange: (start, end) => `The number is in the range ${start} ~ ${end}.`,
   },
 };
 

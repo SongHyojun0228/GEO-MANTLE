@@ -11,6 +11,16 @@ const KEYS = {
   HINTS_UNLOCKED: 'geoMantle_hintsUnlocked',
 };
 
+// NumMantle localStorage 키
+const NUM_KEYS = {
+  DATE: 'numMantle_date',
+  GUESSES: 'numMantle_guesses',
+  IS_CORRECT: 'numMantle_isCorrect',
+  UNIQUE_GUESSES_COUNT: 'numMantle_uniqueGuessesCount',
+  STATS: 'numMantle_stats',
+  ADS_WATCHED: 'numMantle_adsWatched',
+};
+
 // 기본 통계 구조
 const DEFAULT_STATS = {
   totalPlays: 0,
@@ -203,6 +213,99 @@ export function checkAndResetForNewDay(currentDateString) {
   }
 
   return false; // 같은 날
+}
+
+// ============================================================
+// NumMantle storage functions
+// ============================================================
+
+const NUM_DEFAULT_STATS = {
+  totalPlays: 0,
+  totalGuesses: 0,
+  successfulGames: 0,
+  currentStreak: 0,
+  bestStreak: 0,
+  lastPlayedDate: null,
+};
+
+export function getNumStats() {
+  const saved = localStorage.getItem(NUM_KEYS.STATS);
+  return saved ? JSON.parse(saved) : { ...NUM_DEFAULT_STATS };
+}
+
+export function saveNumStats(stats) {
+  localStorage.setItem(NUM_KEYS.STATS, JSON.stringify(stats));
+}
+
+export function updateNumStatsOnGameComplete(guessCount, isSuccess, currentDate) {
+  const stats = getNumStats();
+  const today = new Date(currentDate).toDateString();
+
+  stats.totalPlays += 1;
+  stats.totalGuesses += guessCount;
+
+  if (isSuccess) {
+    stats.successfulGames += 1;
+
+    if (stats.lastPlayedDate) {
+      const yesterday = new Date(currentDate);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (stats.lastPlayedDate === yesterday.toDateString()) {
+        stats.currentStreak += 1;
+      } else {
+        stats.currentStreak = 1;
+      }
+    } else {
+      stats.currentStreak = 1;
+    }
+
+    if (stats.currentStreak > stats.bestStreak) {
+      stats.bestStreak = stats.currentStreak;
+    }
+  } else {
+    stats.currentStreak = 0;
+  }
+
+  stats.lastPlayedDate = today;
+  saveNumStats(stats);
+  return stats;
+}
+
+export function getNumAverageGuesses() {
+  const stats = getNumStats();
+  if (stats.successfulGames === 0) return 0;
+  return (stats.totalGuesses / stats.successfulGames).toFixed(1);
+}
+
+export function getNumAdsWatched() {
+  const saved = localStorage.getItem(NUM_KEYS.ADS_WATCHED);
+  return saved ? parseInt(saved, 10) : 0;
+}
+
+export function incrementNumAdsWatched() {
+  const current = getNumAdsWatched();
+  const newCount = current + 1;
+  localStorage.setItem(NUM_KEYS.ADS_WATCHED, newCount.toString());
+  return newCount;
+}
+
+export function resetNumAdsWatched() {
+  localStorage.setItem(NUM_KEYS.ADS_WATCHED, '0');
+}
+
+export function checkAndResetNumForNewDay(currentDateString) {
+  const savedDate = localStorage.getItem(NUM_KEYS.DATE);
+
+  if (savedDate !== currentDateString) {
+    localStorage.setItem(NUM_KEYS.DATE, currentDateString);
+    localStorage.removeItem(NUM_KEYS.GUESSES);
+    localStorage.removeItem(NUM_KEYS.IS_CORRECT);
+    localStorage.removeItem(NUM_KEYS.UNIQUE_GUESSES_COUNT);
+    resetNumAdsWatched();
+    return true;
+  }
+
+  return false;
 }
 
 export default KEYS;

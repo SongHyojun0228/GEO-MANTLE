@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Analytics } from "@vercel/analytics/react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css"; // Import Leaflet CSS
-import { countries, getDailyAnswerCountry } from "./data/countries";
-import { getGeoDetails } from "./utils/geo";
+import "leaflet/dist/leaflet.css";
+import { countries, getDailyAnswerCountry } from "../data/countries";
+import { getGeoDetails } from "../utils/geo";
 import {
   getStats,
   updateStatsOnGameComplete,
@@ -18,22 +17,22 @@ import {
   getUnlockedHints,
   unlockHint,
   checkAndResetForNewDay,
-} from "./utils/storage";
+} from "../utils/storage";
 import {
   generateContinentHint,
   generateDistanceHint,
   canUnlockHint,
   adsNeededForNextHint,
-} from "./utils/hints";
-import { showRewardedAd } from "./utils/adinplay";
-import { useLanguage } from "./i18n/LanguageContext";
-import GameStats from "./components/GameStats";
-import YesterdayAnswer from "./components/YesterdayAnswer";
-import RecentArchive from "./components/RecentArchive";
-import HintSystem from "./components/HintSystem";
-import AdSenseAd from "./components/AdSenseAd";
-import world_map_1 from "./assets/world_map_1.png";
-import world_map_2 from "./assets/world_map_2.png";
+} from "../utils/hints";
+import { showRewardedAd } from "../utils/adinplay";
+import { useLanguage } from "../i18n/LanguageContext";
+import GameStats from "../components/GameStats";
+import YesterdayAnswer from "../components/YesterdayAnswer";
+import RecentArchive from "../components/RecentArchive";
+import HintSystem from "../components/HintSystem";
+import AdSenseAd from "../components/AdSenseAd";
+import world_map_1 from "../assets/world_map_1.png";
+import world_map_2 from "../assets/world_map_2.png";
 
 // Fix for default Leaflet icon paths
 delete L.Icon.Default.prototype._getIconUrl;
@@ -43,7 +42,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "/images/marker-shadow.png",
 });
 
-// Helper function to check if a name matches a country or its aliases
 const matchesCountry = (nameToCheck, country) => {
   const lowerNameToCheck = nameToCheck.toLowerCase();
   if (country.name.toLowerCase() === lowerNameToCheck) return true;
@@ -56,21 +54,18 @@ const matchesCountry = (nameToCheck, country) => {
   return false;
 };
 
-// Helper to get display name based on language
 const getCountryDisplayName = (country, lang) => {
   if (typeof country === 'string') return country;
   return lang === 'en' ? (country.englishName || country.name) : country.name;
 };
 
-function App() {
-  const { lang, setLang, t } = useLanguage();
+function GeoMantlePage() {
+  const { lang, t } = useLanguage();
 
-  // Determine today's answer country
   const today = new Date();
   const currentDateString = today.toDateString();
   const todayAnswerCountry = getDailyAnswerCountry(today);
 
-  // Initialize state from localStorage or default values
   const [guess, setGuess] = useState("");
   const [guesses, setGuesses] = useState(() => {
     const savedDate = localStorage.getItem("geoMantle_date");
@@ -101,8 +96,6 @@ function App() {
     }
     return 0;
   });
-  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const [stats, setStats] = useState(() => getStats());
   const [archive, setArchive] = useState(() => getArchive());
@@ -282,7 +275,6 @@ function App() {
 
         saveYesterdayAnswer(todayAnswerCountry, finalGuessCount, today);
 
-        // GA4 이벤트 트래킹
         if (window.gtag) {
           window.gtag('event', 'game_completed', {
             country: todayAnswerCountry.englishName,
@@ -308,14 +300,14 @@ function App() {
 
   const formatResultsForClipboard = () => {
     const answerName = getCountryDisplayName(todayAnswerCountry, lang);
-    let resultString = `Geo-Mantle 🌍\n`;
+    let resultString = `Geo-Mantle\n`;
     resultString += `${t('todaysAnswer')}: ${answerName}\n\n`;
     resultString += `${t('myGuessResult')}: ${uniqueGuessesCount}${t('successIn')}\n\n`;
 
     guesses.forEach((item) => {
       let visualCue = item.direction;
       if (matchesCountry(item.name, todayAnswerCountry)) {
-        visualCue = "✅";
+        visualCue = "OK";
       }
       const displayName = lang === 'en' ? (item.englishName || item.name) : item.name;
       resultString += `${displayName} ${visualCue} ${item.similarity}%\n`;
@@ -339,10 +331,6 @@ function App() {
 
   const handleCloseModal = () => {
     setIsCorrect(false);
-  };
-
-  const handleToggleInstructionsModal = () => {
-    setShowInstructionsModal((prev) => !prev);
   };
 
   const handleWatchAd = () => {
@@ -377,42 +365,7 @@ function App() {
   const answerDisplayName = getCountryDisplayName(todayAnswerCountry, lang);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center p-4">
-      {/* Header */}
-      <header className="w-full max-w-md flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-teal-400 shrink-0">🌍 Geo-Mantle</h1>
-        <div className="flex items-center space-x-2 shrink-0">
-          {/* Language Toggle */}
-          <div className="flex bg-gray-700 rounded-md overflow-hidden text-sm">
-            <button
-              onClick={() => setLang('ko')}
-              className={`px-3 py-2 font-medium transition-colors ${
-                lang === 'ko'
-                  ? 'bg-teal-600 text-white'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              KR
-            </button>
-            <button
-              onClick={() => setLang('en')}
-              className={`px-3 py-2 font-medium transition-colors ${
-                lang === 'en'
-                  ? 'bg-teal-600 text-white'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              ENG
-            </button>
-          </div>
-          <button
-            onClick={handleToggleInstructionsModal}
-            className="px-3 py-2 bg-gray-700 text-gray-200 rounded-md hover:bg-gray-600 transition-colors text-sm whitespace-nowrap"
-          >
-            {t('howToPlay')}
-          </button>
-        </div>
-      </header>
+    <>
       {/* Stats & Content */}
       <GameStats stats={stats} averageGuesses={getAverageGuesses()} />
       {yesterdayAnswer && <YesterdayAnswer yesterdayData={yesterdayAnswer} />}
@@ -462,7 +415,7 @@ function App() {
                   iconAnchor: [0, 24],
                   labelAnchor: [-6, 0],
                   popupAnchor: [0, -36],
-                  html: `<span class="bg-green-500 text-white font-bold p-1 rounded-full text-xs whitespace-nowrap">${answerDisplayName} ✅</span>`,
+                  html: `<span class="bg-green-500 text-white font-bold p-1 rounded-full text-xs whitespace-nowrap">${answerDisplayName} OK</span>`,
                 })}
               >
                 <Popup>{t('answer')}: {answerDisplayName}</Popup>
@@ -584,92 +537,8 @@ function App() {
           </div>
         </div>
       )}
-      {/* Instructions Modal */}
-      {showInstructionsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 p-8 rounded-lg shadow-xl text-left relative max-w-lg">
-            <button
-              onClick={handleToggleInstructionsModal}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-2xl font-bold"
-              aria-label={t('closeDescription')}
-            >
-              &times;
-            </button>
-            <h2 className="text-3xl font-bold text-teal-400 mb-4">
-              {t('instructionsTitle')}
-            </h2>
-            <div className="text-gray-200 space-y-3">
-              <p>{t('instruction1')}</p>
-              <p>{t('instruction2')}</p>
-              <p>{t('instruction3')}</p>
-              <p>{t('instruction4')}</p>
-              <p>{t('instruction5')}</p>
-            </div>
-            <button
-              onClick={handleToggleInstructionsModal}
-              className="mt-6 px-6 py-3 bg-teal-600 text-white font-semibold rounded-md hover:bg-teal-700 transition-colors w-full"
-            >
-              {t('closeButton')}
-            </button>
-          </div>
-        </div>
-      )}
-      {/* Privacy Policy Modal */}
-      {showPrivacyModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 p-8 rounded-lg shadow-xl text-left relative max-w-lg max-h-[80vh] overflow-y-auto">
-            <button
-              onClick={() => setShowPrivacyModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-2xl font-bold"
-            >
-              &times;
-            </button>
-            <h2 className="text-2xl font-bold text-teal-400 mb-4">{t('privacyPolicy')}</h2>
-            <div className="text-gray-300 space-y-4 text-sm">
-              <p>{t('privacyIntro')}</p>
-              <div>
-                <h3 className="font-semibold text-gray-100 mb-1">{t('privacySection1Title')}</h3>
-                <p>{t('privacySection1Content')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-100 mb-1">{t('privacySection2Title')}</h3>
-                <p>{t('privacySection2Content')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-100 mb-1">{t('privacySection3Title')}</h3>
-                <p>{t('privacySection3Content')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-100 mb-1">{t('privacySection4Title')}</h3>
-                <p>{t('privacySection4Content')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-100 mb-1">{t('privacySection5Title')}</h3>
-                <p>{t('privacySection5Content')}</p>
-              </div>
-              <p className="text-gray-500 text-xs">{t('privacyLastUpdated')}</p>
-            </div>
-            <button
-              onClick={() => setShowPrivacyModal(false)}
-              className="mt-6 px-6 py-3 bg-teal-600 text-white font-semibold rounded-md hover:bg-teal-700 transition-colors w-full"
-            >
-              {t('closeButton')}
-            </button>
-          </div>
-        </div>
-      )}
-      {/* Footer */}
-      <footer className="w-full max-w-md mt-8 mb-4 text-center">
-        <button
-          onClick={() => setShowPrivacyModal(true)}
-          className="text-sm text-gray-500 hover:text-gray-300 transition-colors underline"
-        >
-          {t('privacyPolicy')}
-        </button>
-      </footer>
-      <Analytics />
-    </div>
+    </>
   );
 }
 
-export default App;
+export default GeoMantlePage;
