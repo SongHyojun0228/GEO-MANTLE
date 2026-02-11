@@ -188,6 +188,7 @@ function FranchiseMantlePage() {
   };
 
   const answerDisplayName = lang === 'en' ? todayAnswer.englishName : todayAnswer.name;
+  const isDebug = new URLSearchParams(window.location.search).has('debug');
 
   const getMatchBadge = (match, label) => (
     <span className={`text-xs px-1.5 py-0.5 rounded ${match ? 'bg-green-600 text-green-100' : 'bg-gray-600 text-gray-400'}`}>
@@ -197,6 +198,15 @@ function FranchiseMantlePage() {
 
   return (
     <>
+      {/* Debug */}
+      {isDebug && (
+        <div className="w-full max-w-md bg-red-900 border border-red-500 p-3 rounded-lg mb-4 text-center">
+          <span className="text-red-300 text-sm font-mono">
+            DEBUG: {todayAnswer.name} ({todayAnswer.englishName}) | {todayAnswer.category} | {todayAnswer.size} | {todayAnswer.priceRange}가
+          </span>
+        </div>
+      )}
+
       {/* Stats */}
       <GameStats stats={stats} averageGuesses={getFranchiseAverageGuesses()} />
 
