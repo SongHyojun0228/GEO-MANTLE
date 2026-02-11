@@ -46,6 +46,18 @@ function NavBar({ onShowInstructions }) {
         >
           Animal
         </NavLink>
+        <NavLink
+          to="/franchise"
+          className={({ isActive }) =>
+            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${
+              isActive
+                ? 'bg-teal-600 text-white'
+                : 'text-gray-400 hover:text-gray-200'
+            }`
+          }
+        >
+          Franchise
+        </NavLink>
       </div>
       {/* Language + Help */}
       <div className="flex items-center justify-end space-x-2">
