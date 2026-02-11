@@ -363,9 +363,18 @@ function GeoMantlePage() {
   };
 
   const answerDisplayName = getCountryDisplayName(todayAnswerCountry, lang);
+  const isDebug = new URLSearchParams(window.location.search).has('debug');
 
   return (
     <>
+      {/* Debug */}
+      {isDebug && (
+        <div className="w-full max-w-md bg-red-900 border border-red-500 p-3 rounded-lg mb-4 text-center">
+          <span className="text-red-300 text-sm font-mono">
+            DEBUG: {todayAnswerCountry.name} ({todayAnswerCountry.englishName})
+          </span>
+        </div>
+      )}
       {/* Stats & Content */}
       <GameStats stats={stats} averageGuesses={getAverageGuesses()} />
       {yesterdayAnswer && <YesterdayAnswer yesterdayData={yesterdayAnswer} />}

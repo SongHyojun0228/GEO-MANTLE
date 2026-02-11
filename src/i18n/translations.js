@@ -170,7 +170,7 @@ const translations = {
     // FranchiseMantle Instructions
     franchiseInstructionsTitle: 'FranchiseMantle 게임 방법',
     franchiseInstruction1: '매일 새로운 한국 프랜차이즈가 정답으로 선정됩니다. 목표는 이 프랜차이즈를 맞히는 것입니다.',
-    franchiseInstruction2: '프랜차이즈 이름을 입력하면 정답과의 **속성 유사도(%)**가 표시됩니다. 유사도는 업종(50점), 규모(25점), 가격대(25점) 3가지 속성을 비교하여 계산됩니다.',
+    franchiseInstruction2: '프랜차이즈 이름을 입력하면 정답과의 **속성 유사도(%)**가 표시됩니다. 유사도는 업종(80점), 규모(10점), 가격대(10점) 3가지 속성을 비교하여 계산됩니다.',
     franchiseInstruction3: '각 추측에서 업종/규모/가격대가 정답과 일치하면 초록색, 불일치하면 회색으로 표시됩니다.',
     franchiseInstruction4: '광고를 시청하면 업종, 가격대, 규모 등 총 3단계의 힌트를 해금할 수 있습니다.',
     franchiseInstruction5: '추측 기록은 매일 자정에 초기화됩니다.',
@@ -352,7 +352,7 @@ const translations = {
     // FranchiseMantle Instructions
     franchiseInstructionsTitle: 'How to Play FranchiseMantle',
     franchiseInstruction1: 'Every day, a new Korean franchise is selected as the answer. Your goal is to guess this franchise.',
-    franchiseInstruction2: 'When you enter a franchise name, the **attribute similarity (%)** to the answer is shown. Similarity is calculated by comparing 3 attributes: category (50pts), size (25pts), and price range (25pts).',
+    franchiseInstruction2: 'When you enter a franchise name, the **attribute similarity (%)** to the answer is shown. Similarity is calculated by comparing 3 attributes: category (80pts), size (10pts), and price range (10pts).',
     franchiseInstruction3: 'For each guess, matching attributes are shown in green and non-matching ones in gray.',
     franchiseInstruction4: 'Watch ads to unlock up to 3 hint levels: category, price range, and size.',
     franchiseInstruction5: 'Your guesses reset every day at midnight.',

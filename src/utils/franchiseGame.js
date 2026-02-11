@@ -41,14 +41,14 @@ export function calculateFranchiseSimilarity(guess, answer) {
 
   let score = 0;
 
-  // category (50점)
-  if (guess.category === answer.category) score += 50;
+  // category (80점)
+  if (guess.category === answer.category) score += 80;
 
-  // size (25점)
-  if (guess.size === answer.size) score += 25;
+  // size (10점)
+  if (guess.size === answer.size) score += 10;
 
-  // priceRange (25점)
-  if (guess.priceRange === answer.priceRange) score += 25;
+  // priceRange (10점)
+  if (guess.priceRange === answer.priceRange) score += 10;
 
   return Math.min(score, 99);
 }

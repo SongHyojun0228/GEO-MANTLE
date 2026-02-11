@@ -183,9 +183,18 @@ function AnimalMantlePage() {
   };
 
   const answerDisplayName = lang === 'en' ? todayAnswer.englishName : todayAnswer.name;
+  const isDebug = new URLSearchParams(window.location.search).has('debug');
 
   return (
     <>
+      {/* Debug */}
+      {isDebug && (
+        <div className="w-full max-w-md bg-red-900 border border-red-500 p-3 rounded-lg mb-4 text-center">
+          <span className="text-red-300 text-sm font-mono">
+            DEBUG: {todayAnswer.name} ({todayAnswer.englishName}) | {todayAnswer.class} | {todayAnswer.habitat}
+          </span>
+        </div>
+      )}
       {/* Stats */}
       <GameStats stats={stats} averageGuesses={getAnimalAverageGuesses()} />
 
