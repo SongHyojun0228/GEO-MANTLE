@@ -506,10 +506,10 @@ function GeoMantlePage() {
       {/* Success Modal */}
       {isCorrect && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-700 p-8 rounded-lg shadow-xl text-center relative">
+          <div className="bg-gray-700 rounded-lg shadow-xl text-center relative max-h-[90vh] overflow-y-auto p-8">
             <button
               onClick={handleCloseModal}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-2xl font-bold"
+              className="sticky top-0 float-right text-gray-400 hover:text-gray-200 text-2xl font-bold z-10"
               aria-label={t('closeModal')}
             >
               &times;
