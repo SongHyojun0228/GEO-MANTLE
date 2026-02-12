@@ -1,0 +1,7 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#1f2937"/>
+  <text x="600" y="200" text-anchor="middle" fill="#ffffff" font-size="72" font-family="Arial, sans-serif" font-weight="bold">Mantle 시리즈</text>
+  <text x="600" y="300" text-anchor="middle" fill="#5eead4" font-size="48" font-family="Arial, sans-serif">매일 새로운 추측 게임 4종</text>
+  <text x="600" y="420" text-anchor="middle" fill="#9ca3af" font-size="56" font-family="Arial, sans-serif">🌍 🔢 🐾 🏪</text>
+  <text x="600" y="520" text-anchor="middle" fill="#6b7280" font-size="32" font-family="Arial, sans-serif">geo-mantle.vercel.app</text>
+</svg>
