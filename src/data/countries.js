@@ -204,3 +204,7 @@ export function getDailyAnswerCountry(date) {
   const randomIndex = Math.floor(random(seed) * countries.length);
   return countries[randomIndex];
 }
+
+export function getRandomCountry() {
+  return countries[Math.floor(Math.random() * countries.length)];
+}

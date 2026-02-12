@@ -23,6 +23,10 @@ export function getDailyFranchise(date = new Date()) {
   return franchises[index];
 }
 
+export function getRandomFranchise() {
+  return franchises[Math.floor(Math.random() * franchises.length)];
+}
+
 // 이름으로 프랜차이즈 찾기 (한국어/영어/별칭)
 export function findFranchiseByName(input) {
   const normalized = input.trim().toLowerCase();

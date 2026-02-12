@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getDailyNumber, calculateSimilarity } from "../utils/numGame";
+import { getDailyNumber, calculateSimilarity, getRandomNumber } from "../utils/numGame";
 import {
   getNumStats,
   updateNumStatsOnGameComplete,
@@ -10,6 +10,7 @@ import {
 } from "../utils/storage";
 import { showRewardedAd } from "../utils/adinplay";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getGameDayNumber, similarityToEmoji } from "../utils/shareHelper";
 import GameStats from "../components/GameStats";
 import NumMantleHintSystem from "../components/NumMantleHintSystem";
 import AdSenseAd from "../components/AdSenseAd";
@@ -52,6 +53,13 @@ function NumMantlePage() {
   const [stats, setStats] = useState(() => getNumStats());
   const [adsWatchedCount, setAdsWatchedCount] = useState(() => getNumAdsWatched());
 
+  // Unlimited mode state (session only, not persisted)
+  const [gameMode, setGameMode] = useState('daily');
+  const [unlimitedAnswer, setUnlimitedAnswer] = useState(null);
+  const [unlimitedRound, setUnlimitedRound] = useState(0);
+
+  const currentAnswer = gameMode === 'unlimited' && unlimitedAnswer !== null ? unlimitedAnswer : todayAnswer;
+
   useEffect(() => {
     const isNewDay = checkAndResetNumForNewDay(currentDateString);
     if (isNewDay) {
@@ -66,17 +74,19 @@ function NumMantlePage() {
     }
   }, [currentDateString, todayAnswer]);
 
-  useEffect(() => {
-    localStorage.setItem("numMantle_guesses", JSON.stringify(guesses));
-  }, [guesses]);
+  const isDailyMode = gameMode === 'daily';
 
   useEffect(() => {
-    localStorage.setItem("numMantle_isCorrect", JSON.stringify(isCorrect));
-  }, [isCorrect]);
+    if (isDailyMode) localStorage.setItem("numMantle_guesses", JSON.stringify(guesses));
+  }, [guesses, isDailyMode]);
 
   useEffect(() => {
-    localStorage.setItem("numMantle_uniqueGuessesCount", JSON.stringify(uniqueGuessesCount));
-  }, [uniqueGuessesCount]);
+    if (isDailyMode) localStorage.setItem("numMantle_isCorrect", JSON.stringify(isCorrect));
+  }, [isCorrect, isDailyMode]);
+
+  useEffect(() => {
+    if (isDailyMode) localStorage.setItem("numMantle_uniqueGuessesCount", JSON.stringify(uniqueGuessesCount));
+  }, [uniqueGuessesCount, isDailyMode]);
 
   const handleGuess = (e) => {
     e.preventDefault();
@@ -92,7 +102,7 @@ function NumMantlePage() {
       return;
     }
 
-    const similarity = calculateSimilarity(num, todayAnswer);
+    const similarity = calculateSimilarity(num, currentAnswer);
 
     const newGuess = {
       number: num,
@@ -109,18 +119,20 @@ function NumMantlePage() {
       setUniqueGuessesCount((prev) => prev + 1);
     }
 
-    if (num === todayAnswer) {
+    if (num === currentAnswer) {
       setIsCorrect(true);
-      const finalGuessCount = existingIndex !== -1 ? uniqueGuessesCount : uniqueGuessesCount + 1;
-      const updatedStats = updateNumStatsOnGameComplete(finalGuessCount, true, today);
-      setStats(updatedStats);
+      if (gameMode === 'daily') {
+        const finalGuessCount = existingIndex !== -1 ? uniqueGuessesCount : uniqueGuessesCount + 1;
+        const updatedStats = updateNumStatsOnGameComplete(finalGuessCount, true, today);
+        setStats(updatedStats);
 
-      if (window.gtag) {
-        window.gtag('event', 'num_game_completed', {
-          answer: todayAnswer,
-          guesses: finalGuessCount,
-          language: lang,
-        });
+        if (window.gtag) {
+          window.gtag('event', 'num_game_completed', {
+            answer: todayAnswer,
+            guesses: finalGuessCount,
+            language: lang,
+          });
+        }
       }
     }
 
@@ -135,16 +147,48 @@ function NumMantlePage() {
     return "text-gray-400";
   };
 
-  const formatResultsForClipboard = () => {
-    let result = `NumMantle #\n`;
-    result += `${t('numTodaysAnswer')}: ${todayAnswer}\n\n`;
-    result += `${t('myGuessResult')}: ${uniqueGuessesCount}${t('successIn')}\n\n`;
+  const startUnlimitedMode = () => {
+    setGameMode('unlimited');
+    setUnlimitedAnswer(getRandomNumber());
+    setUnlimitedRound((prev) => prev + 1);
+    setGuesses([]);
+    setIsCorrect(false);
+    setUniqueGuessesCount(0);
+  };
 
-    guesses.forEach((item) => {
-      const mark = item.number === todayAnswer ? " OK" : "";
-      result += `${item.number} - ${item.similarity}%${mark}\n`;
-    });
-    result += `\n#NumMantle`;
+  const returnToDaily = () => {
+    setGameMode('daily');
+    setUnlimitedAnswer(null);
+    setUnlimitedRound(0);
+    const savedDate = localStorage.getItem("numMantle_date");
+    if (savedDate === currentDateString) {
+      const savedGuesses = localStorage.getItem("numMantle_guesses");
+      setGuesses(savedGuesses ? JSON.parse(savedGuesses) : []);
+      const savedIsCorrect = localStorage.getItem("numMantle_isCorrect");
+      setIsCorrect(savedIsCorrect ? JSON.parse(savedIsCorrect) : false);
+      const savedCount = localStorage.getItem("numMantle_uniqueGuessesCount");
+      setUniqueGuessesCount(savedCount ? JSON.parse(savedCount) : 0);
+    } else {
+      setGuesses([]);
+      setIsCorrect(false);
+      setUniqueGuessesCount(0);
+    }
+  };
+
+  const formatResultsForClipboard = () => {
+    const emojiBar = guesses.map((item) => similarityToEmoji(item.similarity)).reverse().join('');
+    if (gameMode === 'unlimited') {
+      let result = `🔢 NumMantle ${t('unlimitedPractice')}\n`;
+      result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
+      result += `${emojiBar}\n\n`;
+      result += `geo-mantle.vercel.app/num`;
+      return result;
+    }
+    const dayNum = getGameDayNumber(today);
+    let result = `🔢 NumMantle #${dayNum}\n`;
+    result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
+    result += `${emojiBar}\n\n`;
+    result += `geo-mantle.vercel.app/num`;
     return result;
   };
 
@@ -182,23 +226,27 @@ function NumMantlePage() {
 
   return (
     <>
+      {/* Unlimited Mode Banner */}
+      {gameMode === 'unlimited' && (
+        <div className="w-full max-w-md bg-purple-900 border border-purple-500 p-3 rounded-lg mb-4 text-center">
+          <span className="text-purple-200 font-semibold">{t('unlimitedModeActive')}</span>
+          <button
+            onClick={returnToDaily}
+            className="ml-3 text-purple-300 underline hover:text-purple-100 text-sm"
+          >
+            {t('unlimitedBackToDaily')}
+          </button>
+        </div>
+      )}
+
       {/* Debug */}
       {isDebug && (
         <div className="w-full max-w-md bg-red-900 border border-red-500 p-3 rounded-lg mb-4 text-center">
           <span className="text-red-300 text-sm font-mono">
-            DEBUG: {todayAnswer}
+            DEBUG: {currentAnswer}
           </span>
         </div>
       )}
-      {/* Stats */}
-      <GameStats stats={stats} averageGuesses={getNumAverageGuesses()} />
-
-      {/* Hint System */}
-      <NumMantleHintSystem
-        answer={todayAnswer}
-        adsWatchedCount={adsWatchedCount}
-        onWatchAd={handleWatchAd}
-      />
 
       {/* Input Area */}
       <main className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
@@ -211,6 +259,7 @@ function NumMantlePage() {
             min="1"
             max="9999"
             className="p-3 rounded-md bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-100"
+            autoFocus
           />
           <button
             type="submit"
@@ -257,6 +306,18 @@ function NumMantlePage() {
         )}
       </section>
 
+      {/* Hint System */}
+      <NumMantleHintSystem
+        answer={currentAnswer}
+        adsWatchedCount={adsWatchedCount}
+        onWatchAd={handleWatchAd}
+      />
+
+      {/* Stats */}
+      {stats.totalPlays > 0 && (
+        <GameStats stats={stats} averageGuesses={getNumAverageGuesses()} />
+      )}
+
       {/* Success Modal */}
       {isCorrect && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
@@ -273,18 +334,42 @@ function NumMantlePage() {
             </h2>
             <p className="text-gray-200 mb-2">
               {t('congratulations')}{" "}
-              <span className="font-semibold">{todayAnswer}</span>
+              <span className="font-semibold">{currentAnswer}</span>
               {t('numYouGuessed')}
             </p>
             <p className="text-4xl font-bold text-teal-300 mb-6">
               {uniqueGuessesCount}{t('guessCountResult')}
             </p>
+            {/* Share Preview Card */}
+            <div className="bg-gray-800 rounded-lg p-5 mb-5 text-left font-mono text-sm leading-relaxed border border-gray-600">
+              <p className="text-white">🔢 NumMantle {gameMode === 'unlimited' ? t('unlimitedPractice') : `#${getGameDayNumber(today)}`}</p>
+              <p className="text-white">🏆 {uniqueGuessesCount}{t('successIn')}</p>
+              <p className="text-2xl mt-2 tracking-wider">{guesses.map((item) => similarityToEmoji(item.similarity)).reverse().join('')}</p>
+              <p className="text-gray-400 mt-2 text-xs">geo-mantle.vercel.app/num</p>
+            </div>
             <button
               onClick={handleCopyResults}
               className="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors mb-4"
             >
               {copyFeedback || t('copyResults')}
             </button>
+            {/* Unlimited Mode Button */}
+            {gameMode === 'daily' && (
+              <button
+                onClick={startUnlimitedMode}
+                className="block w-full mt-3 px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {t('unlimitedModeContinue')}
+              </button>
+            )}
+            {gameMode === 'unlimited' && (
+              <button
+                onClick={startUnlimitedMode}
+                className="block w-full mt-3 px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {t('unlimitedModeNext')}
+              </button>
+            )}
             <div className="mt-4">
               <AdSenseAd adSlot="YOUR_AD_SLOT_ID" />
             </div>

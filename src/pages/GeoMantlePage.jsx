@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { countries, getDailyAnswerCountry } from "../data/countries";
+import { countries, getDailyAnswerCountry, getRandomCountry } from "../data/countries";
 import { getGeoDetails } from "../utils/geo";
 import {
   getStats,
@@ -26,6 +26,7 @@ import {
 } from "../utils/hints";
 import { showRewardedAd } from "../utils/adinplay";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getGameDayNumber, similarityToEmoji } from "../utils/shareHelper";
 import GameStats from "../components/GameStats";
 import YesterdayAnswer from "../components/YesterdayAnswer";
 import RecentArchive from "../components/RecentArchive";
@@ -104,6 +105,14 @@ function GeoMantlePage() {
   );
   const [adsWatchedCount, setAdsWatchedCount] = useState(() => getAdsWatched());
   const [unlockedHints, setUnlockedHints] = useState(() => getUnlockedHints());
+  const [showWorldMaps, setShowWorldMaps] = useState(false);
+
+  // Unlimited mode state (session only, not persisted)
+  const [gameMode, setGameMode] = useState('daily');
+  const [unlimitedAnswer, setUnlimitedAnswer] = useState(null);
+  const [unlimitedRound, setUnlimitedRound] = useState(0);
+
+  const currentAnswer = gameMode === 'unlimited' && unlimitedAnswer ? unlimitedAnswer : todayAnswerCountry;
 
   useEffect(() => {
     const isNewDay = checkAndResetForNewDay(currentDateString);
@@ -124,20 +133,23 @@ function GeoMantlePage() {
     }
   }, [currentDateString, todayAnswerCountry.name]);
 
-  useEffect(() => {
-    localStorage.setItem("geoMantle_guesses", JSON.stringify(guesses));
-  }, [guesses]);
+  // Guard localStorage saving: only persist in daily mode
+  const isDailyMode = gameMode === 'daily';
 
   useEffect(() => {
-    localStorage.setItem("geoMantle_isCorrect", JSON.stringify(isCorrect));
-  }, [isCorrect]);
+    if (isDailyMode) localStorage.setItem("geoMantle_guesses", JSON.stringify(guesses));
+  }, [guesses, isDailyMode]);
 
   useEffect(() => {
-    localStorage.setItem(
+    if (isDailyMode) localStorage.setItem("geoMantle_isCorrect", JSON.stringify(isCorrect));
+  }, [isCorrect, isDailyMode]);
+
+  useEffect(() => {
+    if (isDailyMode) localStorage.setItem(
       "geoMantle_uniqueGuessesCount",
       JSON.stringify(uniqueGuessesCount),
     );
-  }, [uniqueGuessesCount]);
+  }, [uniqueGuessesCount, isDailyMode]);
 
   const geocodeLocation = async (locationName) => {
     try {
@@ -216,7 +228,7 @@ function GeoMantlePage() {
     }
 
     if (guessedLocation) {
-      const { lat: answerLat, lon: answerLon } = todayAnswerCountry;
+      const { lat: answerLat, lon: answerLon } = currentAnswer;
       const { distance, direction } = getGeoDetails(
         guessedLocation.lat,
         guessedLocation.lon,
@@ -251,36 +263,38 @@ function GeoMantlePage() {
         setUniqueGuessesCount((prevCount) => prevCount + 1);
       }
 
-      if (matchesCountry(guessedLocation.name, todayAnswerCountry)) {
+      if (matchesCountry(guessedLocation.name, currentAnswer)) {
         setIsCorrect(true);
 
-        const finalGuessCount =
-          existingGuessIndex !== -1
-            ? uniqueGuessesCount
-            : uniqueGuessesCount + 1;
-        const updatedStats = updateStatsOnGameComplete(
-          finalGuessCount,
-          true,
-          today,
-        );
-        setStats(updatedStats);
+        if (gameMode === 'daily') {
+          const finalGuessCount =
+            existingGuessIndex !== -1
+              ? uniqueGuessesCount
+              : uniqueGuessesCount + 1;
+          const updatedStats = updateStatsOnGameComplete(
+            finalGuessCount,
+            true,
+            today,
+          );
+          setStats(updatedStats);
 
-        const updatedArchive = addToArchive(
-          todayAnswerCountry,
-          finalGuessCount,
-          today,
-          true,
-        );
-        setArchive(updatedArchive);
+          const updatedArchive = addToArchive(
+            todayAnswerCountry,
+            finalGuessCount,
+            today,
+            true,
+          );
+          setArchive(updatedArchive);
 
-        saveYesterdayAnswer(todayAnswerCountry, finalGuessCount, today);
+          saveYesterdayAnswer(todayAnswerCountry, finalGuessCount, today);
 
-        if (window.gtag) {
-          window.gtag('event', 'game_completed', {
-            country: todayAnswerCountry.englishName,
-            guesses: finalGuessCount,
-            language: lang,
-          });
+          if (window.gtag) {
+            window.gtag('event', 'game_completed', {
+              country: todayAnswerCountry.englishName,
+              guesses: finalGuessCount,
+              language: lang,
+            });
+          }
         }
       }
     } else {
@@ -298,22 +312,50 @@ function GeoMantlePage() {
     return "text-gray-400";
   };
 
-  const formatResultsForClipboard = () => {
-    const answerName = getCountryDisplayName(todayAnswerCountry, lang);
-    let resultString = `Geo-Mantle\n`;
-    resultString += `${t('todaysAnswer')}: ${answerName}\n\n`;
-    resultString += `${t('myGuessResult')}: ${uniqueGuessesCount}${t('successIn')}\n\n`;
+  const startUnlimitedMode = () => {
+    setGameMode('unlimited');
+    setUnlimitedAnswer(getRandomCountry());
+    setUnlimitedRound((prev) => prev + 1);
+    setGuesses([]);
+    setIsCorrect(false);
+    setUniqueGuessesCount(0);
+  };
 
-    guesses.forEach((item) => {
-      let visualCue = item.direction;
-      if (matchesCountry(item.name, todayAnswerCountry)) {
-        visualCue = "OK";
-      }
-      const displayName = lang === 'en' ? (item.englishName || item.name) : item.name;
-      resultString += `${displayName} ${visualCue} ${item.similarity}%\n`;
-    });
-    resultString += `\n#GeoMantle`;
-    return resultString;
+  const returnToDaily = () => {
+    setGameMode('daily');
+    setUnlimitedAnswer(null);
+    setUnlimitedRound(0);
+    // Restore daily state from localStorage
+    const savedDate = localStorage.getItem("geoMantle_date");
+    if (savedDate === currentDateString) {
+      const savedGuesses = localStorage.getItem("geoMantle_guesses");
+      setGuesses(savedGuesses ? JSON.parse(savedGuesses) : []);
+      const savedIsCorrect = localStorage.getItem("geoMantle_isCorrect");
+      setIsCorrect(savedIsCorrect ? JSON.parse(savedIsCorrect) : false);
+      const savedCount = localStorage.getItem("geoMantle_uniqueGuessesCount");
+      setUniqueGuessesCount(savedCount ? JSON.parse(savedCount) : 0);
+    } else {
+      setGuesses([]);
+      setIsCorrect(false);
+      setUniqueGuessesCount(0);
+    }
+  };
+
+  const formatResultsForClipboard = () => {
+    const emojiBar = guesses.map((item) => similarityToEmoji(item.similarity)).reverse().join('');
+    if (gameMode === 'unlimited') {
+      let result = `🌍 GeoMantle ${t('unlimitedPractice')}\n`;
+      result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
+      result += `${emojiBar}\n\n`;
+      result += `geo-mantle.vercel.app`;
+      return result;
+    }
+    const dayNum = getGameDayNumber(today);
+    let result = `🌍 GeoMantle #${dayNum}\n`;
+    result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
+    result += `${emojiBar}\n\n`;
+    result += `geo-mantle.vercel.app`;
+    return result;
   };
 
   const handleCopyResults = async () => {
@@ -362,36 +404,34 @@ function GeoMantlePage() {
     );
   };
 
-  const answerDisplayName = getCountryDisplayName(todayAnswerCountry, lang);
+  const answerDisplayName = getCountryDisplayName(currentAnswer, lang);
   const isDebug = new URLSearchParams(window.location.search).has('debug');
 
   return (
     <>
+      {/* Unlimited Mode Banner */}
+      {gameMode === 'unlimited' && (
+        <div className="w-full max-w-md bg-purple-900 border border-purple-500 p-3 rounded-lg mb-4 text-center">
+          <span className="text-purple-200 font-semibold">{t('unlimitedModeActive')}</span>
+          <button
+            onClick={returnToDaily}
+            className="ml-3 text-purple-300 underline hover:text-purple-100 text-sm"
+          >
+            {t('unlimitedBackToDaily')}
+          </button>
+        </div>
+      )}
+
       {/* Debug */}
       {isDebug && (
         <div className="w-full max-w-md bg-red-900 border border-red-500 p-3 rounded-lg mb-4 text-center">
           <span className="text-red-300 text-sm font-mono">
-            DEBUG: {todayAnswerCountry.name} ({todayAnswerCountry.englishName})
+            DEBUG: {currentAnswer.name} ({currentAnswer.englishName})
           </span>
         </div>
       )}
-      {/* Stats & Content */}
-      <GameStats stats={stats} averageGuesses={getAverageGuesses()} />
-      {yesterdayAnswer && <YesterdayAnswer yesterdayData={yesterdayAnswer} />}
-      {archive.length > 0 && <RecentArchive archive={archive} />}
-      <div className="flex flex-col items-center mt-4 space-y-4 mb-8 w-full max-w-md">
-        <img
-          src={world_map_1}
-          alt="World Map 1"
-          className="w-full h-auto rounded-lg shadow-md"
-        />
-        <img
-          src={world_map_2}
-          alt="World Map 2"
-          className="w-full h-auto rounded-lg shadow-md"
-        />
-      </div>
-      {/* Map Section */}
+
+      {/* Leaflet Map */}
       <section className="w-full max-w-md mb-8">
         <div className="bg-gray-800 p-2 rounded-lg shadow-lg relative z-0">
           <MapContainer
@@ -416,9 +456,9 @@ function GeoMantlePage() {
                   </Marker>
                 ),
             )}
-            {isCorrect && todayAnswerCountry.lat && todayAnswerCountry.lon && (
+            {isCorrect && currentAnswer.lat && currentAnswer.lon && (
               <Marker
-                position={[todayAnswerCountry.lat, todayAnswerCountry.lon]}
+                position={[currentAnswer.lat, currentAnswer.lon]}
                 icon={L.divIcon({
                   className: "my-custom-pin",
                   iconAnchor: [0, 24],
@@ -433,14 +473,16 @@ function GeoMantlePage() {
           </MapContainer>
         </div>
       </section>
+
       {/* Hint System */}
       <HintSystem
-        answerCountry={todayAnswerCountry}
+        answerCountry={currentAnswer}
         guesses={guesses}
         adsWatchedCount={adsWatchedCount}
         unlockedHints={unlockedHints}
         onWatchAd={handleWatchAd}
       />
+
       {/* Input Area */}
       <main className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
         <form onSubmit={handleGuess} className="flex flex-col space-y-4">
@@ -451,6 +493,7 @@ function GeoMantlePage() {
             placeholder={t('inputPlaceholder')}
             className="p-3 rounded-md bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-100"
             disabled={isLoading}
+            autoFocus
           />
           <button
             type="submit"
@@ -462,6 +505,7 @@ function GeoMantlePage() {
         </form>
         {error && <p className="text-red-400 mt-4 text-center">{error}</p>}
       </main>
+
       {/* Result List */}
       <section className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-gray-100 mb-4">
@@ -512,6 +556,41 @@ function GeoMantlePage() {
           </ul>
         )}
       </section>
+
+      {/* World Maps (collapsible) */}
+      <div className="w-full max-w-md mt-4 mb-8">
+        <button
+          onClick={() => setShowWorldMaps((prev) => !prev)}
+          className="w-full py-3 bg-gray-700 text-gray-200 font-semibold rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
+        >
+          <span>{showWorldMaps ? '▲' : '▼'}</span>
+          {t('toggleWorldMaps')}
+        </button>
+        {showWorldMaps && (
+          <div className="flex flex-col items-center mt-4 space-y-4">
+            <img
+              src={world_map_1}
+              alt="World Map 1"
+              className="w-full h-auto rounded-lg shadow-md"
+            />
+            <img
+              src={world_map_2}
+              alt="World Map 2"
+              className="w-full h-auto rounded-lg shadow-md"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Yesterday & Archive */}
+      {yesterdayAnswer && <YesterdayAnswer yesterdayData={yesterdayAnswer} />}
+      {archive.length > 0 && <RecentArchive archive={archive} />}
+
+      {/* Stats */}
+      {stats.totalPlays > 0 && (
+        <GameStats stats={stats} averageGuesses={getAverageGuesses()} />
+      )}
+
       {/* Success Modal */}
       {isCorrect && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
@@ -534,12 +613,36 @@ function GeoMantlePage() {
             <p className="text-4xl font-bold text-teal-300 mb-6">
               {uniqueGuessesCount}{t('guessCountResult')}
             </p>
+            {/* Share Preview Card */}
+            <div className="bg-gray-800 rounded-lg p-5 mb-5 text-left font-mono text-sm leading-relaxed border border-gray-600">
+              <p className="text-white">🌍 GeoMantle {gameMode === 'unlimited' ? t('unlimitedPractice') : `#${getGameDayNumber(today)}`}</p>
+              <p className="text-white">🏆 {uniqueGuessesCount}{t('successIn')}</p>
+              <p className="text-2xl mt-2 tracking-wider">{guesses.map((item) => similarityToEmoji(item.similarity)).reverse().join('')}</p>
+              <p className="text-gray-400 mt-2 text-xs">geo-mantle.vercel.app</p>
+            </div>
             <button
               onClick={handleCopyResults}
               className="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors mb-4"
             >
               {copyFeedback || t('copyResults')}
             </button>
+            {/* Unlimited Mode Button */}
+            {gameMode === 'daily' && (
+              <button
+                onClick={startUnlimitedMode}
+                className="block w-full mt-3 px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {t('unlimitedModeContinue')}
+              </button>
+            )}
+            {gameMode === 'unlimited' && (
+              <button
+                onClick={startUnlimitedMode}
+                className="block w-full mt-3 px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {t('unlimitedModeNext')}
+              </button>
+            )}
             <div className="mt-4">
               <AdSenseAd adSlot="YOUR_AD_SLOT_ID" />
             </div>

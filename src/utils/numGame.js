@@ -38,6 +38,10 @@ export function isPrime(n) {
   return true;
 }
 
+export function getRandomNumber() {
+  return Math.floor(Math.random() * 9999) + 1;
+}
+
 // 숫자 속성 (힌트용)
 export function getNumberProperties(n) {
   return {

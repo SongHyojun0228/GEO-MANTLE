@@ -23,6 +23,10 @@ export function getDailyAnimal(date = new Date()) {
   return animals[index];
 }
 
+export function getRandomAnimal() {
+  return animals[Math.floor(Math.random() * animals.length)];
+}
+
 // 이름으로 동물 찾기 (한국어/영어/별칭)
 export function findAnimalByName(input) {
   const normalized = input.trim().toLowerCase();

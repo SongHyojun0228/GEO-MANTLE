@@ -18,6 +18,7 @@ const translations = {
     timesUnit: '회',
     noGuessesYet: '아직 추측이 없습니다. 첫 번째 국가를 입력해보세요!',
     hintBasicDirection: '💡 힌트: 기본적으로 <strong>방향</strong>만 표시됩니다. 광고를 시청하면 <strong>거리와 유사도(%)</strong>를 볼 수 있어요!',
+    toggleWorldMaps: '세계지도 보기',
 
     // Success modal
     correct: '🎉 정답입니다! 🎉',
@@ -179,6 +180,14 @@ const translations = {
     franchiseHintCategory: (cat) => `🏪 업종 힌트: 정답 프랜차이즈의 업종은 ${cat}입니다.`,
     franchiseHintPrice: (price) => `💰 가격대 힌트: 정답 프랜차이즈의 가격대는 ${price}가입니다.`,
     franchiseHintSize: (size) => `📏 규모 힌트: 정답 프랜차이즈의 규모는 ${size}입니다.`,
+
+    // Unlimited Mode
+    unlimitedModeContinue: '무한 모드로 계속 플레이',
+    unlimitedModeNext: '다음 문제',
+    unlimitedModeLabel: '연습',
+    unlimitedModeActive: '무한 모드 진행 중',
+    unlimitedBackToDaily: '오늘의 문제로 돌아가기',
+    unlimitedPractice: '연습',
   },
 
   en: {
@@ -200,6 +209,7 @@ const translations = {
     timesUnit: '',
     noGuessesYet: 'No guesses yet. Try entering your first country!',
     hintBasicDirection: '💡 Hint: By default, only the <strong>direction</strong> is shown. Watch an ad to unlock <strong>distance and similarity (%)</strong>!',
+    toggleWorldMaps: 'World Maps',
 
     // Success modal
     correct: '🎉 Correct! 🎉',
@@ -361,6 +371,14 @@ const translations = {
     franchiseHintCategory: (cat) => `🏪 Category: The answer's category is ${cat}.`,
     franchiseHintPrice: (price) => `💰 Price: The answer's price range is ${price}.`,
     franchiseHintSize: (size) => `📏 Size: The answer's size is ${size}.`,
+
+    // Unlimited Mode
+    unlimitedModeContinue: 'Continue with Unlimited Mode',
+    unlimitedModeNext: 'Next Puzzle',
+    unlimitedModeLabel: 'Practice',
+    unlimitedModeActive: 'Unlimited Mode',
+    unlimitedBackToDaily: 'Back to Daily Puzzle',
+    unlimitedPractice: 'Practice',
   },
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getDailyAnimal, findAnimalByName, calculateAnimalSimilarity } from "../utils/animalGame";
+import { getDailyAnimal, findAnimalByName, calculateAnimalSimilarity, getRandomAnimal } from "../utils/animalGame";
 import {
   getAnimalStats,
   updateAnimalStatsOnGameComplete,
@@ -10,6 +10,7 @@ import {
 } from "../utils/storage";
 import { showRewardedAd } from "../utils/adinplay";
 import { useLanguage } from "../i18n/LanguageContext";
+import { getGameDayNumber, similarityToEmoji } from "../utils/shareHelper";
 import GameStats from "../components/GameStats";
 import AnimalMantleHintSystem from "../components/AnimalMantleHintSystem";
 import AdSenseAd from "../components/AdSenseAd";
@@ -52,6 +53,13 @@ function AnimalMantlePage() {
   const [stats, setStats] = useState(() => getAnimalStats());
   const [adsWatchedCount, setAdsWatchedCount] = useState(() => getAnimalAdsWatched());
 
+  // Unlimited mode state (session only, not persisted)
+  const [gameMode, setGameMode] = useState('daily');
+  const [unlimitedAnswer, setUnlimitedAnswer] = useState(null);
+  const [unlimitedRound, setUnlimitedRound] = useState(0);
+
+  const currentAnswer = gameMode === 'unlimited' && unlimitedAnswer ? unlimitedAnswer : todayAnswer;
+
   useEffect(() => {
     const isNewDay = checkAndResetAnimalForNewDay(currentDateString);
     if (isNewDay) {
@@ -66,17 +74,19 @@ function AnimalMantlePage() {
     }
   }, [currentDateString, todayAnswer]);
 
-  useEffect(() => {
-    localStorage.setItem("animalMantle_guesses", JSON.stringify(guesses));
-  }, [guesses]);
+  const isDailyMode = gameMode === 'daily';
 
   useEffect(() => {
-    localStorage.setItem("animalMantle_isCorrect", JSON.stringify(isCorrect));
-  }, [isCorrect]);
+    if (isDailyMode) localStorage.setItem("animalMantle_guesses", JSON.stringify(guesses));
+  }, [guesses, isDailyMode]);
 
   useEffect(() => {
-    localStorage.setItem("animalMantle_uniqueGuessesCount", JSON.stringify(uniqueGuessesCount));
-  }, [uniqueGuessesCount]);
+    if (isDailyMode) localStorage.setItem("animalMantle_isCorrect", JSON.stringify(isCorrect));
+  }, [isCorrect, isDailyMode]);
+
+  useEffect(() => {
+    if (isDailyMode) localStorage.setItem("animalMantle_uniqueGuessesCount", JSON.stringify(uniqueGuessesCount));
+  }, [uniqueGuessesCount, isDailyMode]);
 
   const handleGuess = (e) => {
     e.preventDefault();
@@ -93,7 +103,7 @@ function AnimalMantlePage() {
       return;
     }
 
-    const similarity = calculateAnimalSimilarity(animal, todayAnswer);
+    const similarity = calculateAnimalSimilarity(animal, currentAnswer);
     const displayName = lang === 'en' ? animal.englishName : animal.name;
 
     const newGuess = {
@@ -112,18 +122,20 @@ function AnimalMantlePage() {
       setUniqueGuessesCount((prev) => prev + 1);
     }
 
-    if (animal.name === todayAnswer.name) {
+    if (animal.name === currentAnswer.name) {
       setIsCorrect(true);
-      const finalGuessCount = existingIndex !== -1 ? uniqueGuessesCount : uniqueGuessesCount + 1;
-      const updatedStats = updateAnimalStatsOnGameComplete(finalGuessCount, true, today);
-      setStats(updatedStats);
+      if (gameMode === 'daily') {
+        const finalGuessCount = existingIndex !== -1 ? uniqueGuessesCount : uniqueGuessesCount + 1;
+        const updatedStats = updateAnimalStatsOnGameComplete(finalGuessCount, true, today);
+        setStats(updatedStats);
 
-      if (window.gtag) {
-        window.gtag('event', 'animal_game_completed', {
-          answer: todayAnswer.englishName,
-          guesses: finalGuessCount,
-          language: lang,
-        });
+        if (window.gtag) {
+          window.gtag('event', 'animal_game_completed', {
+            answer: todayAnswer.englishName,
+            guesses: finalGuessCount,
+            language: lang,
+          });
+        }
       }
     }
 
@@ -137,18 +149,48 @@ function AnimalMantlePage() {
     return "text-gray-400";
   };
 
-  const formatResultsForClipboard = () => {
-    const answerName = lang === 'en' ? todayAnswer.englishName : todayAnswer.name;
-    let result = `AnimalMantle #\n`;
-    result += `${t('animalTodaysAnswer')}: ${answerName}\n\n`;
-    result += `${t('myGuessResult')}: ${uniqueGuessesCount}${t('successIn')}\n\n`;
+  const startUnlimitedMode = () => {
+    setGameMode('unlimited');
+    setUnlimitedAnswer(getRandomAnimal());
+    setUnlimitedRound((prev) => prev + 1);
+    setGuesses([]);
+    setIsCorrect(false);
+    setUniqueGuessesCount(0);
+  };
 
-    guesses.forEach((item) => {
-      const name = lang === 'en' ? item.englishName : item.name;
-      const mark = item.name === todayAnswer.name ? " OK" : "";
-      result += `${name} - ${item.similarity}%${mark}\n`;
-    });
-    result += `\n#AnimalMantle`;
+  const returnToDaily = () => {
+    setGameMode('daily');
+    setUnlimitedAnswer(null);
+    setUnlimitedRound(0);
+    const savedDate = localStorage.getItem("animalMantle_date");
+    if (savedDate === currentDateString) {
+      const savedGuesses = localStorage.getItem("animalMantle_guesses");
+      setGuesses(savedGuesses ? JSON.parse(savedGuesses) : []);
+      const savedIsCorrect = localStorage.getItem("animalMantle_isCorrect");
+      setIsCorrect(savedIsCorrect ? JSON.parse(savedIsCorrect) : false);
+      const savedCount = localStorage.getItem("animalMantle_uniqueGuessesCount");
+      setUniqueGuessesCount(savedCount ? JSON.parse(savedCount) : 0);
+    } else {
+      setGuesses([]);
+      setIsCorrect(false);
+      setUniqueGuessesCount(0);
+    }
+  };
+
+  const formatResultsForClipboard = () => {
+    const emojiBar = guesses.map((item) => similarityToEmoji(item.similarity)).reverse().join('');
+    if (gameMode === 'unlimited') {
+      let result = `🐾 AnimalMantle ${t('unlimitedPractice')}\n`;
+      result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
+      result += `${emojiBar}\n\n`;
+      result += `geo-mantle.vercel.app/animal`;
+      return result;
+    }
+    const dayNum = getGameDayNumber(today);
+    let result = `🐾 AnimalMantle #${dayNum}\n`;
+    result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
+    result += `${emojiBar}\n\n`;
+    result += `geo-mantle.vercel.app/animal`;
     return result;
   };
 
@@ -182,28 +224,32 @@ function AnimalMantlePage() {
     );
   };
 
-  const answerDisplayName = lang === 'en' ? todayAnswer.englishName : todayAnswer.name;
+  const answerDisplayName = lang === 'en' ? currentAnswer.englishName : currentAnswer.name;
   const isDebug = new URLSearchParams(window.location.search).has('debug');
 
   return (
     <>
+      {/* Unlimited Mode Banner */}
+      {gameMode === 'unlimited' && (
+        <div className="w-full max-w-md bg-purple-900 border border-purple-500 p-3 rounded-lg mb-4 text-center">
+          <span className="text-purple-200 font-semibold">{t('unlimitedModeActive')}</span>
+          <button
+            onClick={returnToDaily}
+            className="ml-3 text-purple-300 underline hover:text-purple-100 text-sm"
+          >
+            {t('unlimitedBackToDaily')}
+          </button>
+        </div>
+      )}
+
       {/* Debug */}
       {isDebug && (
         <div className="w-full max-w-md bg-red-900 border border-red-500 p-3 rounded-lg mb-4 text-center">
           <span className="text-red-300 text-sm font-mono">
-            DEBUG: {todayAnswer.name} ({todayAnswer.englishName}) | {todayAnswer.class} | {todayAnswer.habitat}
+            DEBUG: {currentAnswer.name} ({currentAnswer.englishName}) | {currentAnswer.class} | {currentAnswer.habitat}
           </span>
         </div>
       )}
-      {/* Stats */}
-      <GameStats stats={stats} averageGuesses={getAnimalAverageGuesses()} />
-
-      {/* Hint System */}
-      <AnimalMantleHintSystem
-        answer={todayAnswer}
-        adsWatchedCount={adsWatchedCount}
-        onWatchAd={handleWatchAd}
-      />
 
       {/* Input Area */}
       <main className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8">
@@ -214,6 +260,7 @@ function AnimalMantlePage() {
             onChange={(e) => setGuess(e.target.value)}
             placeholder={t('animalInputPlaceholder')}
             className="p-3 rounded-md bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-100"
+            autoFocus
           />
           <button
             type="submit"
@@ -260,6 +307,18 @@ function AnimalMantlePage() {
         )}
       </section>
 
+      {/* Hint System */}
+      <AnimalMantleHintSystem
+        answer={currentAnswer}
+        adsWatchedCount={adsWatchedCount}
+        onWatchAd={handleWatchAd}
+      />
+
+      {/* Stats */}
+      {stats.totalPlays > 0 && (
+        <GameStats stats={stats} averageGuesses={getAnimalAverageGuesses()} />
+      )}
+
       {/* Success Modal */}
       {isCorrect && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
@@ -282,12 +341,36 @@ function AnimalMantlePage() {
             <p className="text-4xl font-bold text-teal-300 mb-6">
               {uniqueGuessesCount}{t('guessCountResult')}
             </p>
+            {/* Share Preview Card */}
+            <div className="bg-gray-800 rounded-lg p-5 mb-5 text-left font-mono text-sm leading-relaxed border border-gray-600">
+              <p className="text-white">🐾 AnimalMantle {gameMode === 'unlimited' ? t('unlimitedPractice') : `#${getGameDayNumber(today)}`}</p>
+              <p className="text-white">🏆 {uniqueGuessesCount}{t('successIn')}</p>
+              <p className="text-2xl mt-2 tracking-wider">{guesses.map((item) => similarityToEmoji(item.similarity)).reverse().join('')}</p>
+              <p className="text-gray-400 mt-2 text-xs">geo-mantle.vercel.app/animal</p>
+            </div>
             <button
               onClick={handleCopyResults}
               className="px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors mb-4"
             >
               {copyFeedback || t('copyResults')}
             </button>
+            {/* Unlimited Mode Button */}
+            {gameMode === 'daily' && (
+              <button
+                onClick={startUnlimitedMode}
+                className="block w-full mt-3 px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {t('unlimitedModeContinue')}
+              </button>
+            )}
+            {gameMode === 'unlimited' && (
+              <button
+                onClick={startUnlimitedMode}
+                className="block w-full mt-3 px-6 py-3 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors"
+              >
+                {t('unlimitedModeNext')}
+              </button>
+            )}
             <div className="mt-4">
               <AdSenseAd adSlot="YOUR_AD_SLOT_ID" />
             </div>
