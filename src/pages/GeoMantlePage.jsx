@@ -347,14 +347,14 @@ function GeoMantlePage() {
       let result = `🌍 GeoMantle ${t('unlimitedPractice')}\n`;
       result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
       result += `${emojiBar}\n\n`;
-      result += `geo-mantle.vercel.app`;
+      result += `https://geo-mantle.vercel.app`;
       return result;
     }
     const dayNum = getGameDayNumber(today);
-    let result = `🌍 GeoMantle #${dayNum}\n`;
+    let result = `🌍 GeoMantle Day ${dayNum}\n`;
     result += `🏆 ${uniqueGuessesCount}${t('successIn')}\n\n`;
     result += `${emojiBar}\n\n`;
-    result += `geo-mantle.vercel.app`;
+    result += `https://geo-mantle.vercel.app`;
     return result;
   };
 
@@ -615,7 +615,7 @@ function GeoMantlePage() {
             </p>
             {/* Share Preview Card */}
             <div className="bg-gray-800 rounded-lg p-5 mb-5 text-left font-mono text-sm leading-relaxed border border-gray-600">
-              <p className="text-white">🌍 GeoMantle {gameMode === 'unlimited' ? t('unlimitedPractice') : `#${getGameDayNumber(today)}`}</p>
+              <p className="text-white">🌍 GeoMantle {gameMode === 'unlimited' ? t('unlimitedPractice') : `Day ${getGameDayNumber(today)}`}</p>
               <p className="text-white">🏆 {uniqueGuessesCount}{t('successIn')}</p>
               <p className="text-2xl mt-2 tracking-wider">{guesses.map((item) => similarityToEmoji(item.similarity)).reverse().join('')}</p>
               <p className="text-gray-400 mt-2 text-xs">geo-mantle.vercel.app</p>
