@@ -13,10 +13,9 @@ function NavBar({ onShowInstructions }) {
           to="/"
           end
           className={({ isActive }) =>
-            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${
-              isActive
-                ? 'bg-teal-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
+            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${isActive
+              ? 'bg-teal-600 text-white'
+              : 'text-gray-400 hover:text-gray-200'
             }`
           }
         >
@@ -25,10 +24,9 @@ function NavBar({ onShowInstructions }) {
         <NavLink
           to="/num"
           className={({ isActive }) =>
-            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${
-              isActive
-                ? 'bg-teal-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
+            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${isActive
+              ? 'bg-teal-600 text-white'
+              : 'text-gray-400 hover:text-gray-200'
             }`
           }
         >
@@ -37,10 +35,9 @@ function NavBar({ onShowInstructions }) {
         <NavLink
           to="/animal"
           className={({ isActive }) =>
-            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${
-              isActive
-                ? 'bg-teal-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
+            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${isActive
+              ? 'bg-teal-600 text-white'
+              : 'text-gray-400 hover:text-gray-200'
             }`
           }
         >
@@ -49,14 +46,24 @@ function NavBar({ onShowInstructions }) {
         <NavLink
           to="/franchise"
           className={({ isActive }) =>
-            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${
-              isActive
-                ? 'bg-teal-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
+            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${isActive
+              ? 'bg-teal-600 text-white'
+              : 'text-gray-400 hover:text-gray-200'
             }`
           }
         >
           Franchise
+        </NavLink>
+        <NavLink
+          to="/story"
+          className={({ isActive }) =>
+            `flex-1 py-2 font-semibold text-sm text-center transition-colors ${isActive
+              ? 'bg-teal-600 text-white'
+              : 'text-gray-400 hover:text-gray-200'
+            }`
+          }
+        >
+          Blog
         </NavLink>
       </div>
       {/* Language + Help */}
@@ -64,21 +71,19 @@ function NavBar({ onShowInstructions }) {
         <div className="flex bg-gray-700 rounded-md overflow-hidden text-sm">
           <button
             onClick={() => setLang('ko')}
-            className={`px-3 py-1.5 font-medium transition-colors ${
-              lang === 'ko'
+            className={`px-3 py-1.5 font-medium transition-colors ${lang === 'ko'
                 ? 'bg-teal-600 text-white'
                 : 'text-gray-400 hover:text-gray-200'
-            }`}
+              }`}
           >
             KR
           </button>
           <button
             onClick={() => setLang('en')}
-            className={`px-3 py-1.5 font-medium transition-colors ${
-              lang === 'en'
+            className={`px-3 py-1.5 font-medium transition-colors ${lang === 'en'
                 ? 'bg-teal-600 text-white'
                 : 'text-gray-400 hover:text-gray-200'
-            }`}
+              }`}
           >
             ENG
           </button>

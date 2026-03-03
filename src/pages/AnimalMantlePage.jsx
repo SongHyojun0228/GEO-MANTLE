@@ -377,6 +377,20 @@ function AnimalMantlePage() {
           </div>
         </div>
       )}
+
+      {/* SEO Content: article */}
+      <article className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8 text-gray-300 text-sm space-y-4 leading-relaxed mt-8">
+        <h2 className="text-xl font-bold text-teal-400 mb-2">AnimalMantle: 동물 속성 추리 게임 필수 팁</h2>
+        <p>
+          AnimalMantle은 매일 새로운 동물을 맞히는 교육적인 <strong>생물학 기반 단어 퍼즐 게임</strong>입니다. 플레이어가 특정 동물 이름을 입력하면, 정답 동물과 비교하여 조류, 포유류 같은 <strong>분류(Class)부터 서식지(Habitat), 식성(Diet), 크기(Size)</strong> 등 다방면의 생태적 속성 일치도에 따라 유사도(%) 피드백을 받게 됩니다. 게임을 즐기는 것만으로도 자연 생태계에 대한 지식이 풍부해지게 됩니다.
+        </p>
+        <p>
+          효과적인 게임 플레이를 위해서는 무작정 아는 동물을 입력하는 것보다는, 속성별 카테고리를 잘게 쪼개볼 수 있는 '표준적인 동물(개, 고양이, 닭, 코끼리 등)'을 초반에 던져보는 것이 좋습니다. 육식, 초식, 잡식 중 어느 것을 띠고 있는지, 숲에 사는지 아니면 바다나 사막에 서식하는지를 하나하나의 입력 결과로 유추해내는 데이터 분석 능력이 필요합니다.
+        </p>
+        <p>
+          정답에 근접할수록 속성 매칭 확률이 높아지며 유사도가 올라갑니다. 도저히 어떤 동물인지 감이 잡히지 않는다면 광고 힌트 보상을 통해 가장 중요한 속성 단서부터 하나씩 오픈하여 게임을 클리어해 보세요. 자연과 동물에 관심이 많은 분이라면 매일 자정에 새롭게 업데이트되는 이 브라우저 웹게임(Web app)을 놓칠 수 없을 것입니다!
+        </p>
+      </article>
     </>
   );
 }

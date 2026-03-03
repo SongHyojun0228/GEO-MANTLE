@@ -7,6 +7,8 @@ import GeoMantlePage from './pages/GeoMantlePage.jsx'
 import NumMantlePage from './pages/NumMantlePage.jsx'
 import AnimalMantlePage from './pages/AnimalMantlePage.jsx'
 import FranchiseMantlePage from './pages/FranchiseMantlePage.jsx'
+import PrivacyPage from './pages/PrivacyPage.jsx'
+import StoryPage from './pages/StoryPage.jsx'
 
 const router = createBrowserRouter([
   {
@@ -16,6 +18,8 @@ const router = createBrowserRouter([
       { path: '/num', element: <NumMantlePage /> },
       { path: '/animal', element: <AnimalMantlePage /> },
       { path: '/franchise', element: <FranchiseMantlePage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
+      { path: '/story', element: <StoryPage /> },
     ],
   },
 ])

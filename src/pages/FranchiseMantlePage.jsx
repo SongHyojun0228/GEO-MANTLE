@@ -395,6 +395,20 @@ function FranchiseMantlePage() {
           </div>
         </div>
       )}
+
+      {/* SEO Content: article */}
+      <article className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8 text-gray-300 text-sm space-y-4 leading-relaxed mt-8">
+        <h2 className="text-xl font-bold text-teal-400 mb-2">FranchiseMantle: 대한민국 프랜차이즈 맞히기</h2>
+        <p>
+          FranchiseMantle은 대한민국에 실제 존재하는 유명 브랜드 및 체인점들을 주제로 한 <strong>프랜차이즈 퍼즐 기반 웹 게임</strong>입니다. 커피, 치킨, 피자부터 패스트푸드, 편의점 등 다양한 업종에 속하는 브랜드들을 매일 하나씩 맞춰야 합니다. 이 게임을 통해 우리는 우리나라 자영업 및 상권에 어떤 메가 브랜드들이 포진해 있는지 트렌드를 엿볼 수 있습니다.
+        </p>
+        <p>
+          정답 추리의 기본은 <strong>업종, 가격대, 규모</strong>라는 세 가지 필수 데이터입니다. 업종이 정답에 미치는 영향(가중치)이 가장 크기 때문에, 가장 처음에는 '스타벅스(카페/디저트)'나 '교촌치킨(치킨)'처럼 특정 업종을 극명하게 대변하는 대표 브랜드들을 우선적으로 검색하여 색상 피드백을 얻어냅니다. 초록색으로 불이 들어오면 해당 속성이 완전히 일치한다는 의미입니다.
+        </p>
+        <p>
+          이 지식 기반의 데일리 브라우저 게임은 매 라운드가 지나갈수록 참가자에게 은근한 승부욕을 불러일으킵니다. 매일 자정에 갱신되는 수많은 식음료(F&amp;B) 및 리테일 프랜차이즈 후보군 중에서, 오직 직관과 약간의 힌트만으로 정확한 답을 도출하며 여러분의 소비자 인싸 능력을 테스트해보세요.
+        </p>
+      </article>
     </>
   );
 }

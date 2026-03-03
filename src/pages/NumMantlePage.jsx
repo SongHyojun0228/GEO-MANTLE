@@ -376,6 +376,20 @@ function NumMantlePage() {
           </div>
         </div>
       )}
+
+      {/* SEO Content: article */}
+      <article className="w-full max-w-md bg-gray-800 p-6 rounded-lg shadow-lg mb-8 text-gray-300 text-sm space-y-4 leading-relaxed mt-8">
+        <h2 className="text-xl font-bold text-teal-400 mb-2">NumMantle: 오늘의 숫자 맞히기 퍼즐 전략</h2>
+        <p>
+          NumMantle은 1부터 9999 사이의 무작위로 선정된 '오늘의 숫자'를 추리하여 맞히는 웹 기반의 매일 갱신되는 <strong>숫자 퍼즐 게임 앱</strong>입니다. 단순히 운으로 맞히는 것이 아니라, 플레이어가 추측한 숫자와 정답 간의 오차를 바탕으로 제공되는 <strong>유사도(%) 지표</strong>를 논리적으로 분석해야만 최소한의 시도로 정답에 도달할 수 있는 두뇌 게임입니다.
+        </p>
+        <p>
+          높다(Higher), 낮다(Lower) 같은 직접적인 피드백이 제공되지 않는 대신, 유사도 계산 알고리즘에 따른 미묘한 %의 변화를 지켜보는 것이 핵심 공략입니다. 첫 시도에는 5000처럼 중간값을 입력하여 오차 범위를 파악하고, 다음에는 2500 또는 7500을 대입해보면서 숫자를 좁혀가는 이진 탐색(Binary Search)과 유사한 접근법을 취하는 것이 크게 유리합니다.
+        </p>
+        <p>
+          만약 혼자만의 힘으로 풀기 어렵다면 게임 하단에 있는 <strong>힌트 시스템</strong>을 이용해 보세요. 자릿수, 짝수/홀수 여부, 소수(Prime) 형태인지, 특정 값으로 나누어떨어지는지 등의 수학적 단서를 얻어낼 수 있습니다. 이 무료 온라인 퍼즐을 틈틈이 플레이하며 논리적 사고력과 수학적 직관력을 함께 키워 보세요.
+        </p>
+      </article>
     </>
   );
 }
